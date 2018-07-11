@@ -2,9 +2,9 @@
 
 Library for grabbing baseball statistics in python
 
-# Requirements
+## Requirements
 - Python 3
 
-# Install
+## Install
 
     py -3 setup.py install
