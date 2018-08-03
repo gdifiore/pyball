@@ -1,5 +1,7 @@
-# VS Code 
+# VS Code & other
+*.csv
 *.vscode
+pyball.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

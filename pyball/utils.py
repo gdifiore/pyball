@@ -9,3 +9,8 @@ def makeURL(bbref_key):
     url = base_url + bbref_key[0] + "/" + bbref_key + ".shtml"
 
     return url
+
+def toValidJSON(json_string):
+    validJSON = json_string.replace("'", '"')
+
+    return validJSON
