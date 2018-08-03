@@ -12,3 +12,6 @@ from .batting_stats import player_page_links
 from .batting_stats import get_all_player_page_links
 from .batting_stats import long_player_name_from_soup
 from .batting_stats import get_all_player_stats
+from .pitching_stats import find_pitching_standard_table
+from .pitching_stats import decompose_pitching_table
+from .pitching_stats import pitching_stats_from_soup
