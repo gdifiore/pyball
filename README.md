@@ -5,8 +5,7 @@ Library for grabbing baseball statistics in python
 ## Requirements
 - Python 3
 
-## Install
-`pip install pyball` **coming soon**
+## Install/Build From Source
 ```
 pip install --user --upgrade setuptools wheel
 
