@@ -7,7 +7,7 @@ Library for grabbing baseball statistics in python
 
 ## Install/Build From Source
 ```
-pip install --user --upgrade setuptools wheel
+pip install --user --upgrade setuptools
 
 cd pyball
 

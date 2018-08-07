@@ -42,7 +42,7 @@ STANDARD_BATTING_COLUMNS=(
     'OBP',
     'SLG',
     'OPS',
-    'OPX+',
+    'OPS+',
     'TB',
     'GDP',
     'HBP',
@@ -137,8 +137,6 @@ def long_player_name_from_soup(soup):
         long_name_element = info_table[0].findAll('p')[1]
     else:
         long_name_element = info_box.findAll('p')[0]
-
-
 
     return long_name_element.text
 

@@ -37,7 +37,7 @@ STANDARD_PITCHING_COLUMNS=(
     'SV',
     'IP',
     'H',
-    'H',
+    'R',
     'ER',
     'HR',
     'BB',
@@ -58,7 +58,6 @@ STANDARD_PITCHING_COLUMNS=(
     'Awards',
     'Year'
 )
-
 
 def find_pitching_standard_table(soup):
     for table in soup.findAll('table'):
