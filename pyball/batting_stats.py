@@ -54,7 +54,6 @@ STANDARD_BATTING_COLUMNS=(
     'Year'
 )
 
-
 def url_to_beautiful_soup(url):
     url = urllib.request.urlopen(url)
     soup = BeautifulSoup(''.join(str(url.readlines())), features="lxml")
