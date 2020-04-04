@@ -17,3 +17,9 @@ def toValidJSON(json_string):
 
 def stats_to_json(dataFrame):
     print(dataFrame.to_json(orient='index'))
+
+def createTeamURL(team, year):
+    base_url = "https://www.baseball-reference.com/teams/"
+    url = base_url + team + "/" + year + ".shtml"
+
+    return url
