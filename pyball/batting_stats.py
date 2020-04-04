@@ -55,7 +55,7 @@ STANDARD_BATTING_COLUMNS=(
 )
 
 
-def url_to_beautiful_soup(url): 
+def url_to_beautiful_soup(url):
     url = urllib.request.urlopen(url)
     soup = BeautifulSoup(''.join(str(url.readlines())), features="lxml")
     return soup
@@ -68,7 +68,7 @@ def find_batting_standard_table(soup):
     for table in soup.findAll('table'):
         try:
             if table['id'] == 'batting_standard':
-                for tag in soup.select('tr.minors_table'):
+                for tag in soup.select('tr'):
                     tag.decompose()
                 for tag in soup.select('thead'):
                     tag.decompose()
@@ -111,7 +111,7 @@ def player_page_links(players_page_url):
     soup = BeautifulSoup(''.join(f))
     page_content = soup.findAll('div', id='page_content')[0]
     player_blocks = page_content.findAll('blockquote')
-    link_elements = (player_block.findAll('a') for 
+    link_elements = (player_block.findAll('a') for
                     player_block in player_blocks)
     link_elements = itertools.chain(*link_elements)
 
@@ -130,7 +130,7 @@ def get_all_player_page_links():
 
 def long_player_name_from_soup(soup):
     #Gets a more specific name from the player page to avoid duplicate names.
-    
+
     info_box = soup.findAll('div', id='info_box')[0]
     info_table = info_box.findAll('table')
     if info_table:

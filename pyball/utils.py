@@ -14,3 +14,6 @@ def toValidJSON(json_string):
     validJSON = json_string.replace("'", '"')
 
     return validJSON
+
+def stats_to_json(dataFrame):
+    print(dataFrame.to_json(orient='index'))
