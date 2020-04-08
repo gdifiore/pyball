@@ -4,7 +4,7 @@ Library for grabbing baseball statistics in python
 
 ## Why `pyball`
 
-Another python library for getting baseball statistics already exists ([pybaseball](https://github.com/jldbc/pybaseball)(, however, pyball provides built in functions for getting data in the form of a JSON string for easy parsing and presentation of data, not just pandas tables in terminal.
+Another python library for getting baseball statistics already exists ([pybaseball](https://github.com/jldbc/pybaseball)), however, pyball provides built in functions for getting data in the form of a JSON string for easy parsing and presentation of data, not just pandas tables in terminal.
 
 ## Requirements
 - Python 3(.7)
