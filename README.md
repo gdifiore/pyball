@@ -1,6 +1,6 @@
 # `pyball`
 
-Library for grabbing baseball statistics in python
+**Unfinished** Library for grabbing baseball statistics in python
 
 ## Why `pyball`
 
