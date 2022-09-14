@@ -7,9 +7,9 @@
 #
 
 #
-# modified by gdifiore 2018
+# modified by gdifiore 2018-2022
 #
-# only gets name, baseball-reference key and years played
+# only gets name, baseball-reference/mlbam key and years played
 #
 
 import pandas as pd
@@ -25,7 +25,7 @@ def get_lookup_table():
     s=requests.get(url).content
     table = pd.read_csv(io.StringIO(s.decode('utf-8')), dtype={'key_sr_nfl': object, 'key_sr_nba': object, 'key_sr_nhl': object})
     #subset columns
-    cols_to_keep = ['name_last','name_first', 'key_bbref', 'mlb_played_first','mlb_played_last']
+    cols_to_keep = ['name_last','name_first', 'key_bbref', 'key_mlbam', 'mlb_played_first','mlb_played_last']
     table = table[cols_to_keep]
     #make these lowercase to avoid capitalization mistakes when searching
     table['name_last'] = table['name_last'].str.lower()

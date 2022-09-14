@@ -1,156 +1,23 @@
 #
-# 2011 andrewkittredge
+# (c) gdifiore 2022 - difioregabe@gmail.com
 #
-# (No License)
-#
-# https://github.com/andrewkittredge/Baseball-Reference-Scraping
+# File containing functions to obtain player batting data from baseball-reference
 #
 
-#
-# modified by gdifiore 2018
-#
-# translated to python3 & other fixes (include year)
-#
+import pandas as pd
 
-import urllib.request, urllib.parse, urllib.error
-from bs4 import BeautifulSoup
-import re
-import itertools
-from string import ascii_letters
-import sys
+from pyball.utils import readURL
 
-PLAYERS_PAGE_TEMPLATE='http://www.baseball-reference.com/players/%(letter)s/'
+def findBattingTable(soup):
+    table = soup.find('table', id='batting_standard')
 
-STANDARD_BATTING_COLUMNS=(
-    'Age',
-    'Team',
-    'League',
-    'G',
-    'PA',
-    'AB',
-    'R',
-    'H',
-    '2B',
-    '3B',
-    'HR',
-    'RBI',
-    'SB',
-    'CS',
-    'BB',
-    'SO',
-    'BA',
-    'OBP',
-    'SLG',
-    'OPS',
-    'OPS+',
-    'TB',
-    'GDP',
-    'HBP',
-    'SH',
-    'SF',
-    'IBB',
-    'Pos',
-    'Awards',
-    'Year'
-)
+    return table
 
-def url_to_beautiful_soup(url):
-    url = urllib.request.urlopen(url)
-    soup = BeautifulSoup(''.join(str(url.readlines())), features="lxml")
-    return soup
+def batting_stats(url):
+    """This function returns the batting stats for a player"""
+    soup = readURL(url)
+    table = findBattingTable(soup)
 
-def link_to_url(link_element, domain='baseball-reference.com'):
-    href = filter(lambda attr: attr[0] == 'href', link_element.attrs)[0][1]
-    return ''.join(('http://', domain, href))
+    df = pd.read_html(str(table))[0]
 
-def find_batting_standard_table(soup):
-    for table in soup.findAll('table'):
-        try:
-            if table['id'] == 'batting_standard':
-                for tag in soup.select('tr'):
-                    tag.decompose()
-                for tag in soup.select('thead'):
-                    tag.decompose()
-                return table
-        except KeyError:
-            #table does not have an "id" attribute, oh-well, the table we're looking for does
-            pass
-    #exception_string = 'Did not find "batting_standard" table in %s' % soup
-    #raise BaseballReferenceParsingException(exception_string)
-
-batting_standard_re = 'batting_standard\.((18|19|20)[0-9]{2})'
-
-def decompose_batting_table(batting_table_soup):
-    # Takes the soup of batting statistics table
-    stats = []
-    batting_table_body = batting_table_soup.findAll('tbody')[0]
-    for table_row in batting_table_body.findAll('tr'):
-        table_row_id = table_row.get('id')
-        if not table_row_id:
-            continue
-        year = re.findall(batting_standard_re, table_row_id)
-        row_values = {}
-        values = [element.text for element in table_row.findAll('td')]
-        values_with_years = [element.text for element in table_row.findAll('th')]
-        values.extend(values_with_years)
-        my_keys_with_values = list(zip(STANDARD_BATTING_COLUMNS, values))
-        row_values = dict(my_keys_with_values)
-
-        stats.append(row_values)
-    return stats
-
-def batting_stats_from_soup(soup):
-    batting_table = find_batting_standard_table(soup)
-    if batting_table:
-        stats = decompose_batting_table(batting_table)
-        return stats
-
-def player_page_links(players_page_url):
-    f = urllib.request.urlopen(players_page_url)
-    soup = BeautifulSoup(''.join(f))
-    page_content = soup.findAll('div', id='page_content')[0]
-    player_blocks = page_content.findAll('blockquote')
-    link_elements = (player_block.findAll('a') for
-                    player_block in player_blocks)
-    link_elements = itertools.chain(*link_elements)
-
-    for link_element in link_elements:
-        player_name = link_element.text
-        player_page_url = link_to_url(link_element)
-        yield player_name, player_page_url
-
-
-def get_all_player_page_links():
-    for letter in ascii_letters[:26]: #lowercase letters
-        players_page_url = PLAYERS_PAGE_TEMPLATE % {'letter': letter}
-        names_w_links = player_page_links(players_page_url)
-        for player_name, player_page_url in names_w_links:
-            yield player_name, player_page_url
-
-def long_player_name_from_soup(soup):
-    #Gets a more specific name from the player page to avoid duplicate names.
-
-    info_box = soup.findAll('div', id='info_box')[0]
-    info_table = info_box.findAll('table')
-    if info_table:
-        long_name_element = info_table[0].findAll('p')[1]
-    else:
-        long_name_element = info_box.findAll('p')[0]
-
-    return long_name_element.text
-
-def get_all_player_stats():
-    for player_name, player_page_url in get_all_player_page_links():
-
-        soup = url_to_beautiful_soup(player_page_url)
-        batting_stats = batting_stats_from_soup(soup)
-        long_player_name = long_player_name_from_soup(soup)
-
-        yield long_player_name, batting_stats
-
-class BaseballReferenceParsingException(Exception):
-    def __init__(self, value):
-        def __init__(self, value):
-            self.value = value
-        def __str__(self):
-            return repr(self.value)
+    return df.dropna(how='all')

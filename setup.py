@@ -7,13 +7,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyball",
-    version="0.2.0",
+    version="0.9.0",
     author="gdifiore",
     author_email="difioregabe@gmail.com",
-    description="python library for obtaining baseball information",
+    description="Python3 library for obtaining baseball information",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/SummitCode/pyball",
+    url="https://github.com/gdifiore/pyball",
     packages=setuptools.find_packages(),
     classifiers=(
         "Programming Language :: Python :: 3",
