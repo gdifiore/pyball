@@ -1,7 +1,9 @@
 #
-# (c) gdifiore 2022 - difioregabe@gmail.com
+# File: savant.py
+# Author: Gabriel DiFiore <difioregabe@gmail.com>
+# Date: 9/14/2022
 #
-# File containing functions to obtain player savant data
+# Description: File containing functions to obtain player savant data
 #
 
 import pandas as pd
@@ -15,7 +17,7 @@ def findPercentilesTable(soup):
     return table
 
 def savantPercentileStats(url):
-    """This function returns the percentile stats for a player"""
+    """Function to return the percentile stats for a player as a pandas dataframe"""
     soup = readURL(url)
     table = findPercentilesTable(soup)
 
@@ -32,7 +34,7 @@ def findStatcastPitchingStatsTable(soup):
     return table
 
 def savantPitchingStatcastStats(url):
-    """This function returns the savant pitching stats for a player"""
+    """Function to return the savant pitching stats for a player as a pandas dataframe"""
     soup = readURL(url)
     table = findStatcastPitchingStatsTable(soup)
 
@@ -50,7 +52,7 @@ def findStatcastBattingStatsTable(soup):
     return table
 
 def savantBattingStatcastStats(url):
-    """This function returns the savant batting stats for a player"""
+    """Function to return the savant batting stats for a player as a pandas dataframe"""
     soup = readURL(url)
     table = findStatcastBattingStatsTable(soup)
 
@@ -66,7 +68,7 @@ def findBattedBallProfileTable(soup):
     return table
 
 def savantBattedBallProfile(url):
-    """This function returns the batted ball profile for a player"""
+    """Function to return the batted ball profile for a player as a pandas dataframe"""
     soup = readURL(url)
     table = findBattedBallProfileTable(soup)
 
@@ -76,13 +78,12 @@ def savantBattedBallProfile(url):
 
 def findPitchTrackingTable(soup):
     """Function to find the pitch tracking table in the soup"""
-    div = soup.find('div', id='pitchingBreakdown')
-    table = div.find('table')
+    table = soup.find('table', id='detailedPitches')
 
     return table
 
 def savantPitchTracking(url):
-    """This function returns the pitch-specific results for a player"""
+    """Function returns the pitch-specific results for a player as a pandas dataframe"""
     soup = readURL(url)
     table = findPitchTrackingTable(soup)
 

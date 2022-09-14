@@ -34,6 +34,4 @@ Leave any comments or suggestions in [an issue](https://github.com/SummitCode/py
 `pyball` is licensed under the [MIT license](https://github.com/SummitCode/pyball/blob/master/LICENSE)
 
 ## TODO
-- find a way to cache websites vistied by Selenium (just for the day, because data is updated everyday during the baseball season)
-- only use selenium for tables updated by js (Savant's #detailedPitches)
 - update documentation
