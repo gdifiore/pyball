@@ -20,7 +20,11 @@ import requests
 import io
 
 def get_lookup_table():
-    """Function to download a lookup table of all players"""
+    """
+    Function to download a lookup table of all players
+
+    @return pandas dataframe containing the lookup table
+    """
     print('Gathering player lookup table. This may take a moment.')
     url = "https://raw.githubusercontent.com/chadwickbureau/register/master/data/people.csv"
     s = requests.get(url).content
@@ -35,7 +39,14 @@ def get_lookup_table():
 
 
 def playerid_lookup(last, first=None):
-    """Function to lookup a player's baseball reference and mlbam id given their name, from the lookup table"""
+    """
+    Function to lookup a player's baseball reference and mlbam id given their name, from the lookup table
+
+    @param last: last name of the player
+    @param first: first name of the player
+
+    @return: pandas dataframe containing the player's name, baseball-reference id, mlbam id, and years played
+    """
     # force input strings to lowercase
     last = last.lower()
 

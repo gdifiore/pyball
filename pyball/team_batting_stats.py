@@ -11,13 +11,25 @@ import pandas as pd
 from pyball.utils import readURL
 
 def findTeamBattingTable(soup):
-    """Function to find the team batting stats table in the soup"""
+    """
+    Function to find the team batting stats table in the soup
+
+    @param soup: BeautifulSoup object containing the html of the team page
+
+    @return: BeautifulSoup object containing the html of the batting stats table
+    """
     table = soup.find('table', id='team_batting')
 
     return table
 
 def team_batting_stats(url):
-    """Function to return the team batting stats for a team as a pandas dataframe"""
+    """
+    Function to return the team batting stats for a team as a pandas dataframe
+
+    @param url: url of the team page
+
+    @return: pandas dataframe containing the team batting stats for the team
+    """
     soup = readURL(url)
     table = findTeamBattingTable(soup)
 
