@@ -14,9 +14,15 @@ def findBattingTable(soup):
     """
     Function to find the batting stats table in the soup
 
-    @param soup: BeautifulSoup object containing the html of the player page
+    Parameters
+    ----------
+    soup: BeautifulSoup object
+        Contains the html of the player page
 
-    @return: BeautifulSoup object containing the html of the batting stats table
+    Returns
+    ----------
+    BeautifulSoup object
+        Contains the html of the batting stats table
     """
     table = soup.find('table', id='batting_standard')
 
@@ -26,9 +32,15 @@ def batting_stats(url):
     """
     Function to return the batting stats for a player as a pandas dataframe
 
-    @param url: url of the player page
+    Parameters
+    ----------
+    url: String
+        url of the player page
 
-    @return: pandas dataframe containing the batting stats for the player
+    Returns
+    ----------
+    pandas dataframe
+        Contains the batting stats for the player
     """
     soup = readURL(url)
     table = findBattingTable(soup)

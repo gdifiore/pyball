@@ -18,9 +18,11 @@ cd pyball
 setup.py install
 ```
 
-## Tutorials
+## Docs
 
-Read the [wiki](https://github.com/SummitCode/pyball/wiki) for tutorials on using pyball. **Updated version coming soon**
+Read docs [wiki](https://gdifiore.github.io/pyball/docs/pyball/) for function descriptions.
+
+For examples, look at my [MLBResearch Repo](https://github.com/gdifiore/MLBResearch/blob/main/Parse_BBRef_Table/bbref_table.ipynb) where I test most of the functions.
 
 ## Credits
 

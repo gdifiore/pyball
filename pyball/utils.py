@@ -20,9 +20,15 @@ def readURL(url):
     """
     Function to read a url and return the html content
 
-    @param url: url to read
+    Parameters
+    ----------
+    url: String
+        url to read
 
-    @return: BeautifulSoup object containing the html of the url
+    Returns
+    ----------
+    BeautifulSoup object
+        Contains the html of the url
     """
     if url not in cache:
         # Theres one or two dynamic tables on baseball savant that are dynamic based on javascript, which requests cannot handle
@@ -51,9 +57,15 @@ def makeBBRefURL(bbref_key):
     """
     Function to generate baseball-reference url from bbref_key
 
-    @param bbref_key: bbref_key of the player
+    Parameters
+    ----------
+    bref_key: String
+        bbref_key of the player
 
-    @return: baseball-reference url of the player
+    Returns
+    ----------
+    String
+        baseball-reference url of the player
     """
     base_url = "https://www.baseball-reference.com/players/"
     url = base_url + bbref_key[0] + "/" + bbref_key + ".shtml"
@@ -64,11 +76,19 @@ def makeSavantURL(last, first, key_mlbam):
     """
     Function to generate baseball savant url from last name, first name, and mlbam key
 
-    @param last: last name of the player
-    @param first: first name of the player
-    @param key_mlbam: mlbam key of the player
+    Parameters
+    ----------
+    last: String
+        last name of the player
+    first: String
+        first name of the player
+    key_mlbam: String
+        mlbam key of the player
 
-    @return: baseball savant url of the player
+    Returns
+    ----------
+    String
+        baseball savant url of the player
     """
     base_url = "https://baseballsavant.mlb.com/savant-player/"
     url = base_url + last + "-" + first + "-" + key_mlbam
@@ -79,9 +99,15 @@ def createTeamURL(team, year):
     """
     Function to create a baseball-reference team url from team and year
 
-    @param team: team name
+    Parameters
+    ----------
+    team: String
+        team name
 
-    @return: baseball-reference team url
+    Returns
+    ----------
+    String
+        baseball-reference team url
     """
     base_url = "https://www.baseball-reference.com/teams/"
     url = base_url + team + "/" + year + ".shtml"

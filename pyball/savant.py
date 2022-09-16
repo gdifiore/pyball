@@ -14,9 +14,15 @@ def findPercentilesTable(soup):
     """
     Function to find the savant stat percentiles table in the soup
 
-    @param soup: BeautifulSoup object containing the html of the player page
+    Parameters
+    ----------
+    soup : BeautifulSoup object
+        Contains the html of the player page
 
-    @return: BeautifulSoup object containing the html of the savant stat percentiles table
+    Returns
+    -------
+    BeautifulSoup object
+        Contains the html of the savant stat percentiles table
     """
     table = soup.find('table', id='percentileRankings')
 
@@ -26,9 +32,15 @@ def savantPercentileStats(url):
     """
     Function to return the percentile stats for a player as a pandas dataframe
 
-    @param url: url of the player page
+    Parameters
+    ----------
+    url : String
+        url of the player page
 
-    @return: pandas dataframe containing the percentile stats for the player
+    Returns
+    ----------
+    pandas dataframe
+        Contains the percentile stats for the player
     """
     soup = readURL(url)
     table = findPercentilesTable(soup)
@@ -41,9 +53,15 @@ def findStatcastPitchingStatsTable(soup):
     """
     Function to find the statcast pitching stats table in the soup
 
-    @param soup: BeautifulSoup object containing the html of the player page
+    Parameters
+    ----------
+    soup : BeautifulSoup object
+        Contains the html of the player page
 
-    @return: BeautifulSoup object containing the html of the statcast pitching stats table
+    Returns
+    ----------
+    BeautifulSoup object
+        Contains the html of the statcast pitching stats table
     """
     div = soup.find('div', id='statcast_stats_pitching')
     # get table inside div
@@ -55,9 +73,15 @@ def savantPitchingStatcastStats(url):
     """
     Function to return the savant pitching stats for a player as a pandas dataframe
 
-    @param url: url of the player page
+    Parameters
+    ----------
+    url : String
+        url of the player page
 
-    @return: pandas dataframe containing the savant pitching stats for the player
+    Returns
+    ----------
+    pandas dataframe
+        Contains the savant pitching stats for the player
     """
     soup = readURL(url)
     table = findStatcastPitchingStatsTable(soup)
@@ -71,10 +95,15 @@ def findStatcastBattingStatsTable(soup):
     """
     Function to find the statcast batting stats table in the soup
 
-    @param soup: BeautifulSoup object containing the html of the player page\
+    Parameters
+    ----------
+    soup : BeautifulSoup object
+        Contains the html of the player page
 
-    @return: BeautifulSoup object containing the html of the statcast batting stats table
-
+    Returns
+    ----------
+    BeautifulSoup object
+        Contains the html of the statcast batting stats table
     """
     # Find div with id 'statcast_glance_batter' and get table inside
     div = soup.find('div', id='statcast_glance_batter')
@@ -86,9 +115,15 @@ def savantBattingStatcastStats(url):
     """
     Function to return the savant batting stats for a player as a pandas dataframe
 
-    @param url: url of the player page
+    Parameters
+    ----------
+    url : String
+        url of the player page
 
-    @return: pandas dataframe containing the savant batting stats for the player
+    Returns
+    ----------
+    pandas dataframe
+        Contains the savant batting stats for the player
     """
     soup = readURL(url)
     table = findStatcastBattingStatsTable(soup)
@@ -102,9 +137,15 @@ def findBattedBallProfileTable(soup):
     """
     Function to find the batted ball profile table in the soup
 
-    @param soup: BeautifulSoup object containing the html of the player page
+    Parameters
+    ----------
+    soup : BeautifulSoup object
+        Contains the html of the player page
 
-    @return: BeautifulSoup object containing the html of the batted ball profile table
+    Returns
+    ----------
+    BeautifulSoup object
+        Contains the html of the batted ball profile table
     """
     table = soup.find('table', id='playeDiscipline')
 
@@ -114,9 +155,15 @@ def savantBattedBallProfile(url):
     """
     Function to return the batted ball profile for a player as a pandas dataframe
 
-    @param url: url of the player page
+    Parameters
+    ----------
+    url : String
+        url of the player page
 
-    @return: pandas dataframe containing the batted ball profile for the player
+    Returns
+    ----------
+    pandas dataframe
+        Contains the batted ball profile for the player
     """
     soup = readURL(url)
     table = findBattedBallProfileTable(soup)
@@ -129,9 +176,15 @@ def findPitchTrackingTable(soup):
     """
     Function to find the pitch tracking table in the soup
 
-    @param soup: BeautifulSoup object containing the html of the player page
+    Parameters
+    ----------
+    soup : BeautifulSoup object
+        Contains the html of the player page
 
-    @return: BeautifulSoup object containing the html of the pitch tracking table
+    Returns
+    ----------
+    BeautifulSoup object
+        Contains the html of the pitch tracking table
     """
     table = soup.find('table', id='detailedPitches')
 
@@ -141,9 +194,15 @@ def savantPitchTracking(url):
     """
     Function returns the pitch-specific results for a player as a pandas dataframe
 
-    @param url: url of the player page
+    Parameters
+    ----------
+    url : String
+        url of the player page
 
-    @return: pandas dataframe containing the pitch-specific results for the player
+    Returns
+    ----------
+    pandas dataframe
+        Contains the pitch-specific results for the player
     """
     soup = readURL(url)
     table = findPitchTrackingTable(soup)

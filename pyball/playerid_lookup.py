@@ -23,7 +23,10 @@ def get_lookup_table():
     """
     Function to download a lookup table of all players
 
-    @return pandas dataframe containing the lookup table
+    Returns
+    ----------
+    pandas dataframe
+        containing the lookup table of all players
     """
     print('Gathering player lookup table. This may take a moment.')
     url = "https://raw.githubusercontent.com/chadwickbureau/register/master/data/people.csv"
@@ -42,10 +45,17 @@ def playerid_lookup(last, first=None):
     """
     Function to lookup a player's baseball reference and mlbam id given their name, from the lookup table
 
-    @param last: last name of the player
-    @param first: first name of the player
+    Parameters
+    ----------
+    last: String
+        Last name of the player
+    first: String
+        First name of the player
 
-    @return: pandas dataframe containing the player's name, baseball-reference id, mlbam id, and years played
+    Returns
+    ----------
+    pandas dataframe
+        containing the player's name, baseball-reference id, mlbam id, and years played
     """
     # force input strings to lowercase
     last = last.lower()
