@@ -39,6 +39,7 @@ def readURL(url):
 
         driver.get(url)
         # wait for the page to fully load
+        # only wait if the page is baseball savant
         if "baseballsavant" in url:
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "detailedPitches"))

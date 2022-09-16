@@ -13,7 +13,7 @@ from pyball.utils import readURL
 
 def findTeamPitchingTable(soup):
     """
-    Function to find the team pitching stats table in the soup
+    Function to find the team pitching stats table (Baseball-Reference) in the soup
 
     Parameters
     ----------
@@ -31,7 +31,7 @@ def findTeamPitchingTable(soup):
 
 def team_batting_stats(url):
     """
-    Function to return the team batting stats for a team as a pandas dataframe
+    Function to return the (Baseball-Reference) team batting stats for a team as a pandas dataframe
 
     Parameters
     ----------

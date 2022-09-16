@@ -12,7 +12,7 @@ from pyball.utils import readURL
 
 def findPercentilesTable(soup):
     """
-    Function to find the savant stat percentiles table in the soup
+    Function to find the stat percentiles table (Baseball Savant) in the soup
 
     Parameters
     ----------
@@ -30,7 +30,7 @@ def findPercentilesTable(soup):
 
 def savantPercentileStats(url):
     """
-    Function to return the percentile stats for a player as a pandas dataframe
+    Function to return the (Baseball Savant) percentile stats for a player as a pandas dataframe
 
     Parameters
     ----------
@@ -51,7 +51,7 @@ def savantPercentileStats(url):
 
 def findStatcastPitchingStatsTable(soup):
     """
-    Function to find the statcast pitching stats table in the soup
+    Function to find the statcast pitching stats table (Baseball Savant) in the soup
 
     Parameters
     ----------
@@ -71,7 +71,7 @@ def findStatcastPitchingStatsTable(soup):
 
 def savantPitchingStatcastStats(url):
     """
-    Function to return the savant pitching stats for a player as a pandas dataframe
+    Function to return the (Baseball Savant) pitching stats for a player as a pandas dataframe
 
     Parameters
     ----------
@@ -93,7 +93,7 @@ def savantPitchingStatcastStats(url):
 
 def findStatcastBattingStatsTable(soup):
     """
-    Function to find the statcast batting stats table in the soup
+    Function to find the statcast batting stats table (Baseball Savant) in the soup
 
     Parameters
     ----------
@@ -113,7 +113,7 @@ def findStatcastBattingStatsTable(soup):
 
 def savantBattingStatcastStats(url):
     """
-    Function to return the savant batting stats for a player as a pandas dataframe
+    Function to return the (Baseball Savant) batting stats for a player as a pandas dataframe
 
     Parameters
     ----------
@@ -135,7 +135,7 @@ def savantBattingStatcastStats(url):
 
 def findBattedBallProfileTable(soup):
     """
-    Function to find the batted ball profile table in the soup
+    Function to find the batted ball profile table (Baseball Savant) in the soup
 
     Parameters
     ----------
@@ -153,7 +153,7 @@ def findBattedBallProfileTable(soup):
 
 def savantBattedBallProfile(url):
     """
-    Function to return the batted ball profile for a player as a pandas dataframe
+    Function to return the (Baseball Savant) batted ball profile for a player as a pandas dataframe
 
     Parameters
     ----------
@@ -174,7 +174,7 @@ def savantBattedBallProfile(url):
 
 def findPitchTrackingTable(soup):
     """
-    Function to find the pitch tracking table in the soup
+    Function to find the pitch tracking table (Baseball Savant) in the soup
 
     Parameters
     ----------
@@ -192,7 +192,7 @@ def findPitchTrackingTable(soup):
 
 def savantPitchTracking(url):
     """
-    Function returns the pitch-specific results for a player as a pandas dataframe
+    Function returns the (Baseball Savant) pitch-specific results for a player as a pandas dataframe
 
     Parameters
     ----------
