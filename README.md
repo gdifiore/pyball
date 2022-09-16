@@ -20,7 +20,7 @@ setup.py install
 
 ## Docs
 
-Read docs [wiki](https://gdifiore.github.io/pyball/docs/pyball/) for function descriptions.
+Read the [docs](https://gdifiore.github.io/pyball/docs/pyball/index.html) for function descriptions.
 
 For examples, look at my [MLBResearch Repo](https://github.com/gdifiore/MLBResearch/blob/main/Parse_BBRef_Table/bbref_table.ipynb) where I test most of the functions.
 
