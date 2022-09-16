@@ -67,6 +67,7 @@ def readURL(url):
 
         driver.get(url)
         # wait for the page to fully load
+        # only wait if the page is baseball savant
         if &#34;baseballsavant&#34; in url:
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, &#34;detailedPitches&#34;))
@@ -317,6 +318,7 @@ def createTeamURL(team, year):
 
         driver.get(url)
         # wait for the page to fully load
+        # only wait if the page is baseball savant
         if &#34;baseballsavant&#34; in url:
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, &#34;detailedPitches&#34;))
