@@ -8,12 +8,14 @@
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
-chrome_options = Options()
+# This library is meant to run in a Jupyter Notebook
+# so storing the dict like this should be a decent solution
+# to not downloading the website every single run
+chrome_options = webdriver.ChromeOptions()
 cache = dict()
 
 def readURL(url):
@@ -31,11 +33,13 @@ def readURL(url):
         Contains the html of the url
     """
     if url not in cache:
-        # Theres one or two dynamic tables on baseball savant that are dynamic based on javascript, which requests cannot handle
-        # so we use selenium to get the page source and then use beautiful soup to parse it
-        # Follow this tutorial to install selenium and chromedriver: https://medium.com/@soumyadip_95708/web-scraping-using-selenium-and-beautifulsoup-6b2a3f7c7c5a
-        chrome_options.add_argument("--headless")
-        driver = webdriver.Chrome(options=chrome_options)
+        # Theres one or two dynamic tables on baseball savant that are dynamic based on javascript, which `requests` cannot handle
+        # so we use `selenium` to get the page source and then use `bs4` to parse it
+        # Follow this tutorial to install `selenium` and chromedriver: https://medium.com/ymedialabs-innovation/web-scraping-using-beautiful-soup-and-selenium-for-dynamic-page-2f8ad15efe25
+        chrome_options.add_argument('--ignore-certificate-errors')
+        chrome_options.add_argument('--incognito')
+        chrome_options.add_argument('--headless')
+        driver = webdriver.Chrome(chrome_options=chrome_options)
 
         driver.get(url)
         # wait for the page to fully load

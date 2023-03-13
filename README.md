@@ -10,6 +10,10 @@ Another python library for getting baseball statistics already exists ([pybaseba
 - Python 3(.8)
 
 ## Install/Build From Source
+Some manual install work is needed temporarily, navigate to the `chromedriver` [download page](https://chromedriver.chromium.org/downloads). This is needed for `selenium` (an explanation can be found in `utils.py`, or just trust that it works).
+
+Add this `exe` to your Windows `PATH` or MacOS/Linux `$PATH`, and proceed with the install.
+
 ```
 pip install --user --upgrade setuptools
 
