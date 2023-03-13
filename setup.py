@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pyball",
-    version="0.9.0",
+    version="1.0.0",
     author="gdifiore",
     author_email="difioregabe@gmail.com",
     description="Python3 library for obtaining baseball information",

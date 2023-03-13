@@ -1,6 +1,6 @@
 # `pyball`
 
-**Mostly-finished** Library for grabbing baseball statistics in python
+Library for grabbing baseball statistics in Python, designed for use in Jupyter Notebooks.
 
 ## Why `pyball`
 
