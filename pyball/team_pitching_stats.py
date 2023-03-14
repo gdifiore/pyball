@@ -29,9 +29,9 @@ def findTeamPitchingTable(soup):
 
     return table
 
-def team_batting_stats(url):
+def team_pitching_stats(url):
     """
-    Function to return the (Baseball-Reference) team batting stats for a team as a pandas dataframe
+    Function to return the (Baseball-Reference) team pitching stats for a team as a pandas dataframe
 
     Parameters
     ----------

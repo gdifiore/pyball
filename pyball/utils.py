@@ -42,8 +42,7 @@ def readURL(url):
         driver = webdriver.Chrome(chrome_options=chrome_options)
 
         driver.get(url)
-        # wait for the page to fully load
-        # only wait if the page is baseball savant
+        #  if the page is baseball savant, wait for it to fully load
         if "baseballsavant" in url:
             WebDriverWait(driver, 30).until(
                 EC.presence_of_element_located((By.ID, "detailedPitches"))
@@ -52,8 +51,10 @@ def readURL(url):
         driver.close()
 
         soup = BeautifulSoup(html, 'html.parser')
+        # we haven't saved the URL this session yet, so put it in the cache
         cache[url] = soup
     else:
+        # we've saved the URL during this session, so retrive the soup from the cache
         soup = cache[url]
 
     return soup
