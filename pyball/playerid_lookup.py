@@ -29,9 +29,14 @@ def get_lookup_table():
         containing the lookup table of all players
     """
     print('Gathering player lookup table. This may take a moment.')
-    url = "https://raw.githubusercontent.com/chadwickbureau/register/master/data/people.csv"
-    s = requests.get(url).content
-    table = pd.read_csv(io.StringIO(s.decode('utf-8')), dtype={'key_sr_nfl': object, 'key_sr_nba': object, 'key_sr_nhl': object})
+
+    # the original data source split one file into multiple, thus we must download and concatenate all of them
+    files = ["people-0.csv", "people-1.csv", "people-2.csv", "people-3.csv", "people-4.csv", "people-5.csv", "people-6.csv", "people-7.csv", "people-8.csv", "people-9.csv", "people-a.csv", "people-b.csv", "people-c.csv", "people-d.csv", "people-e.csv", "people-f.csv"]
+    table = pd.DataFrame()
+    for file in files:
+        s = requests.get("https://raw.githubusercontent.com/chadwickbureau/register/master/data/" + file).content
+        temp = pd.read_csv(io.StringIO(s.decode('utf-8')), dtype={'key_sr_nfl': object, 'key_sr_nba': object, 'key_sr_nhl': object})
+        table = table.append(temp, ignore_index=True)
     #subset columns
     cols_to_keep = ['name_last','name_first', 'key_bbref', 'key_mlbam', 'mlb_played_first','mlb_played_last']
     table = table[cols_to_keep]
@@ -70,6 +75,6 @@ def playerid_lookup(last, first=None):
     else:
         results = table.loc[(table['name_last']==last) & (table['name_first']==first)]
 
-    results = results.reset_index().drop('index', 1)
+    results = results.reset_index().drop(labels='index', axis=1)
 
     return results
