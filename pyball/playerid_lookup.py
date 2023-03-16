@@ -8,11 +8,12 @@
 
 #
 # File: playerid_lookup.py
-# Author: Gabriel DiFiore <difioregabe@gmail.com> & James LeDoux
+# Author: Gabriel DiFiore <difioregabe@gmail.com>
 # Date: 9/14/2022
 #
 # Description: File containing functions to obtain player (id) information from a lookup table
 #              Modified to only gets name, baseball-reference/mlbam key and years played
+#              Updated to new Github repo data source
 #
 
 import pandas as pd
