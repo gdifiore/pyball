@@ -1,7 +1,7 @@
 #
 # File: pitching_stats.py
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
-# Date: 9/14/2022
+# (c) 2022-2024
 #
 # Description: File containing functions to obtain player batting data from baseball-reference
 #
@@ -9,6 +9,7 @@
 import pandas as pd
 
 from pyball.utils import readURL
+
 
 def findPitchingTable(soup):
     """
@@ -24,9 +25,10 @@ def findPitchingTable(soup):
     BeautifulSoup object
         Contains the html of the pitching stats table
     """
-    table = soup.find('table', id='pitching_standard')
+    table = soup.find("table", id="pitching_standard")
 
     return table
+
 
 def pitching_stats(url):
     """
@@ -47,4 +49,4 @@ def pitching_stats(url):
 
     df = pd.read_html(str(table))[0]
 
-    return df.dropna(how='all')
+    return df.dropna(how="all")

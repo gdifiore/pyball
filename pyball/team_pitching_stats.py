@@ -1,7 +1,7 @@
 #
 # File: team_pitching_stats.py
-# Author: Gabriel DiFiore <difioregabe@gmail.com> & James LeDoux
-# Date: 9/14/2022
+# Author: Gabriel DiFiore <difioregabe@gmail.com>
+# (c) 2022-2024
 #
 # Description: File containing functions to obtain team pitching data from baseball-reference
 #
@@ -10,6 +10,7 @@
 import pandas as pd
 
 from pyball.utils import readURL
+
 
 def findTeamPitchingTable(soup):
     """
@@ -25,9 +26,10 @@ def findTeamPitchingTable(soup):
     BeautifulSoup object
         Contains the html of the pitching stats table
     """
-    table = soup.find('table', id='team_pitching')
+    table = soup.find("table", id="team_pitching")
 
     return table
+
 
 def team_pitching_stats(url):
     """
@@ -48,4 +50,4 @@ def team_pitching_stats(url):
 
     df = pd.read_html(str(table))[0]
 
-    return df.dropna(how='all')
+    return df.dropna(how="all")
