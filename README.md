@@ -1,4 +1,4 @@
-# `pyball`
+# pyball
 
 Library for grabbing baseball statistics in Python, designed for use in Jupyter Notebooks.
 
@@ -10,16 +10,12 @@ Another python library for getting baseball statistics already exists ([pybaseba
 - Python 3(.8)
 
 ## Install/Build From Source
-Some manual install work is needed temporarily, navigate to the `chromedriver` [download page](https://chromedriver.chromium.org/downloads). This is needed for `selenium` (an explanation can be found in `utils.py`, or just trust that it works).
-
-Add this `exe` to your Windows `PATH` or MacOS/Linux `$PATH`, and proceed with the install.
-
 ```
-pip install --user --upgrade setuptools
+git clone https://github.com/gdifiore/pyball.git
 
 cd pyball
 
-setup.py install
+pip install . OR poetry install
 ```
 
 ## Docs
@@ -27,10 +23,6 @@ setup.py install
 Read the [docs](https://gdifiore.github.io/pyball/docs/pyball/index.html) for function descriptions.
 
 For examples, look at my [MLBResearch Repo](https://github.com/gdifiore/MLBResearch/blob/main/Parse_BBRef_Table/bbref_table.ipynb) where I test most of the functions.
-
-## Credits
-
-`playerid_lookup.py` by [James LeDoux](https://github.com/jldbc/pybaseball) (MIT License)
 
 ## Comments and Suggestions
 Leave any comments or suggestions in [an issue](https://github.com/SummitCode/pyball/issues/new) or directly make make [a pull request](https://github.com/SummitCode/pyball/compare) adding code.

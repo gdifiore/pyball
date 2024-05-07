@@ -1,7 +1,7 @@
 #
 # File: savant.py
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
-# Date: 9/14/2022
+# (c) 2022-2024
 #
 # Description: File containing functions to obtain player savant data
 #
@@ -9,6 +9,7 @@
 import pandas as pd
 
 from pyball.utils import readURL
+
 
 def findPercentilesTable(soup):
     """
@@ -24,9 +25,10 @@ def findPercentilesTable(soup):
     BeautifulSoup object
         Contains the html of the savant stat percentiles table
     """
-    table = soup.find('table', id='percentileRankings')
+    table = soup.find("table", id="percentileRankings")
 
     return table
+
 
 def savantPercentileStats(url):
     """
@@ -47,7 +49,8 @@ def savantPercentileStats(url):
 
     df = pd.read_html(str(table))[0]
 
-    return df.dropna(how='all')
+    return df.dropna(how="all")
+
 
 def findStatcastPitchingStatsTable(soup):
     """
@@ -63,11 +66,12 @@ def findStatcastPitchingStatsTable(soup):
     BeautifulSoup object
         Contains the html of the statcast pitching stats table
     """
-    div = soup.find('div', id='statcast_stats_pitching')
+    div = soup.find("div", id="statcast_stats_pitching")
     # get table inside div
-    table = div.find('table')
+    table = div.find("table")
 
     return table
+
 
 def savantPitchingStatcastStats(url):
     """
@@ -89,7 +93,8 @@ def savantPitchingStatcastStats(url):
     df = pd.read_html(str(table))[0]
 
     # drop a row of all NA and drop last row of MLB average
-    return df.dropna(how='all').drop(df.index[-1])
+    return df.dropna(how="all").drop(df.index[-1])
+
 
 def findStatcastBattingStatsTable(soup):
     """
@@ -106,10 +111,11 @@ def findStatcastBattingStatsTable(soup):
         Contains the html of the statcast batting stats table
     """
     # Find div with id 'statcast_glance_batter' and get table inside
-    div = soup.find('div', id='statcast_glance_batter')
-    table = div.find('table')
+    div = soup.find("div", id="statcast_glance_batter")
+    table = div.find("table")
 
     return table
+
 
 def savantBattingStatcastStats(url):
     """
@@ -131,7 +137,8 @@ def savantBattingStatcastStats(url):
     df = pd.read_html(str(table))[0]
 
     # drop a row of all NA and drop last row of MLB average
-    return df.dropna(how='all').drop(df.index[-1])
+    return df.dropna(how="all").drop(df.index[-1])
+
 
 def findBattedBallProfileTable(soup):
     """
@@ -147,9 +154,10 @@ def findBattedBallProfileTable(soup):
     BeautifulSoup object
         Contains the html of the batted ball profile table
     """
-    table = soup.find('table', id='playeDiscipline')
+    table = soup.find("table", id="playeDiscipline")
 
     return table
+
 
 def savantBattedBallProfile(url):
     """
@@ -170,7 +178,8 @@ def savantBattedBallProfile(url):
 
     df = pd.read_html(str(table))[0]
 
-    return df.dropna(how='all')
+    return df.dropna(how="all")
+
 
 def findPitchTrackingTable(soup):
     """
@@ -186,9 +195,10 @@ def findPitchTrackingTable(soup):
     BeautifulSoup object
         Contains the html of the pitch tracking table
     """
-    table = soup.find('table', id='detailedPitches')
+    table = soup.find("table", id="detailedPitches")
 
     return table
+
 
 def savantPitchTracking(url):
     """
@@ -209,4 +219,4 @@ def savantPitchTracking(url):
 
     df = pd.read_html(str(table))[0]
 
-    return df.dropna(how='all')
+    return df.dropna(how="all")

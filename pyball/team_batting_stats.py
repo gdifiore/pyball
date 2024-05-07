@@ -1,7 +1,7 @@
 #
 # File: team_batting_stats.py
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
-# Date: 9/14/2022
+# (c) 2022-2024
 #
 # Description: File containing functions to obtain team batting data from baseball-reference
 #
@@ -9,6 +9,7 @@
 import pandas as pd
 
 from pyball.utils import readURL
+
 
 def findTeamBattingTable(soup):
     """
@@ -24,9 +25,10 @@ def findTeamBattingTable(soup):
     BeautifulSoup object
         Contains the html of the batting stats table
     """
-    table = soup.find('table', id='team_batting')
+    table = soup.find("table", id="team_batting")
 
     return table
+
 
 def team_batting_stats(url):
     """
@@ -47,4 +49,4 @@ def team_batting_stats(url):
 
     df = pd.read_html(str(table))[0]
 
-    return df.dropna(how='all')
+    return df.dropna(how="all")

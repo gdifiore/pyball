@@ -8,6 +8,10 @@
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -15,8 +19,8 @@ from selenium.webdriver.common.by import By
 # This library is meant to run in a Jupyter Notebook
 # so storing the dict like this should be a decent solution
 # to not downloading the website every single run
-chrome_options = webdriver.ChromeOptions()
 cache = dict()
+
 
 def readURL(url):
     """
@@ -36,21 +40,32 @@ def readURL(url):
         # Theres one or two dynamic tables on baseball savant that are dynamic based on javascript, which `requests` cannot handle
         # so we use `selenium` to get the page source and then use `bs4` to parse it
         # Follow this tutorial to install `selenium` and chromedriver: https://medium.com/ymedialabs-innovation/web-scraping-using-beautiful-soup-and-selenium-for-dynamic-page-2f8ad15efe25
-        chrome_options.add_argument('--ignore-certificate-errors')
-        chrome_options.add_argument('--incognito')
-        chrome_options.add_argument('--headless')
-        driver = webdriver.Chrome(chrome_options=chrome_options)
+        options = Options()
+        options.add_argument("--ignore-certificate-errors")
+        options.add_argument("--incognito")
+        options.add_argument("--headless")
 
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=options)
         driver.get(url)
         #  if the page is baseball savant, wait for it to fully load
         if "baseballsavant" in url:
-            WebDriverWait(driver, 30).until(
-                EC.presence_of_element_located((By.ID, "detailedPitches"))
-            )
+            try:
+                print("savant, waiting")
+                WebDriverWait(driver, 30).until(
+                    EC.presence_of_element_located(
+                        (
+                            By.XPATH,
+                            "//div[@class='pitchingBreakdown']//table[@id='detailedPitches']",
+                        )
+                    )
+                )
+            except Exception as e:
+                print("An error occurred: ", str(e))
         html = driver.page_source
         driver.close()
 
-        soup = BeautifulSoup(html, 'html.parser')
+        soup = BeautifulSoup(html, "html.parser")
         # we haven't saved the URL this session yet, so put it in the cache
         cache[url] = soup
     else:
@@ -58,6 +73,7 @@ def readURL(url):
         soup = cache[url]
 
     return soup
+
 
 def makeBBRefURL(bbref_key):
     """
@@ -77,6 +93,7 @@ def makeBBRefURL(bbref_key):
     url = base_url + bbref_key[0] + "/" + bbref_key + ".shtml"
 
     return url
+
 
 def makeSavantURL(last, first, key_mlbam):
     """
@@ -100,6 +117,7 @@ def makeSavantURL(last, first, key_mlbam):
     url = base_url + last + "-" + first + "-" + key_mlbam
 
     return url
+
 
 def createTeamURL(team, year):
     """
