@@ -7,7 +7,7 @@ Library for grabbing baseball statistics in Python, designed for use in Jupyter 
 Another python library for getting baseball statistics already exists ([pybaseball](https://github.com/jldbc/pybaseball)), however, pyball just provides barebones functions for retriving stats from Baseball-Reference, and Baseball Savant.
 
 ## Requirements
-- Python 3(.8)
+- Python 3.10.12
 
 ## Install/Build From Source
 ```

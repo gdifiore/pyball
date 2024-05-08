@@ -37,9 +37,6 @@ def readURL(url):
         Contains the html of the url
     """
     if url not in cache:
-        # Theres one or two dynamic tables on baseball savant that are dynamic based on javascript, which `requests` cannot handle
-        # so we use `selenium` to get the page source and then use `bs4` to parse it
-        # Follow this tutorial to install `selenium` and chromedriver: https://medium.com/ymedialabs-innovation/web-scraping-using-beautiful-soup-and-selenium-for-dynamic-page-2f8ad15efe25
         options = Options()
         options.add_argument("--ignore-certificate-errors")
         options.add_argument("--incognito")
