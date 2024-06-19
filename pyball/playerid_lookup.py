@@ -11,6 +11,7 @@
 import pandas as pd
 import requests
 import io
+from functools import lru_cache
 
 # Constants for the columns to keep in the dataframe
 COLUMNS_TO_KEEP = [
