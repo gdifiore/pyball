@@ -22,6 +22,7 @@ COLUMNS_TO_KEEP = [
     "mlb_played_last",
 ]
 
+@lru_cache(maxsize=None)
 def download_file(file_number):
     """
     Helper function to download a single file from the GitHub repository
@@ -45,7 +46,8 @@ def download_file(file_number):
         io.StringIO(response.content.decode("utf-8")),
         dtype={"key_sr_nfl": object, "key_sr_nba": object, "key_sr_nhl": object},
     )
-
+    
+@lru_cache(maxsize=1)
 def get_lookup_table():
     """
     Function to download a lookup table of all players
