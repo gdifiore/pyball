@@ -40,3 +40,8 @@ jobs:
         if [ -d tests ]; then pytest; fi
     - name: Build package
       run: python -m build
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: package
+        path: dist/*
