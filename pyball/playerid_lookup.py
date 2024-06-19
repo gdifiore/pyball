@@ -12,6 +12,39 @@ import pandas as pd
 import requests
 import io
 
+# Constants for the columns to keep in the dataframe
+COLUMNS_TO_KEEP = [
+    "name_last",
+    "name_first",
+    "key_bbref",
+    "key_mlbam",
+    "mlb_played_first",
+    "mlb_played_last",
+]
+
+def download_file(file_number):
+    """
+    Helper function to download a single file from the GitHub repository
+
+    Parameters
+    ----------
+    file_number: int
+        The file number to download
+
+    Returns
+    ----------
+    pandas dataframe
+        containing the data from the downloaded file
+    """
+    file = f"people-{file_number:x}.csv"  # incrementing hex number
+    response = requests.get(
+        f"https://raw.githubusercontent.com/chadwickbureau/register/master/data/{file}"
+    )
+    response.raise_for_status()  # raise HTTPError if the status code indicates an error
+    return pd.read_csv(
+        io.StringIO(response.content.decode("utf-8")),
+        dtype={"key_sr_nfl": object, "key_sr_nba": object, "key_sr_nhl": object},
+    )
 
 def get_lookup_table():
     """
@@ -27,37 +60,17 @@ def get_lookup_table():
     table = pd.DataFrame()
     file_number = 0
     while True:
-        file = f"people-{file_number:x}.csv"  # incrementing hex number
         try:
-            response = requests.get(
-                f"https://raw.githubusercontent.com/chadwickbureau/register/master/data/{file}"
-            )
-            response.raise_for_status()  # raise HTTPError if the status code indicates an error
-            s = response.content
-            temp = pd.read_csv(
-                io.StringIO(s.decode("utf-8")),
-                dtype={"key_sr_nfl": object, "key_sr_nba": object, "key_sr_nhl": object},
-            )
+            temp = download_file(file_number)
             table = pd.concat([table, temp], ignore_index=True)
             file_number += 1
         except requests.exceptions.HTTPError:
             break
 
-    # subset columns
-    cols_to_keep = [
-        "name_last",
-        "name_first",
-        "key_bbref",
-        "key_mlbam",
-        "mlb_played_first",
-        "mlb_played_last",
-    ]
-    table = table[cols_to_keep]
-    # make these lowercase to avoid capitalization mistakes when searching
+    table = table[COLUMNS_TO_KEEP]
     table["name_last"] = table["name_last"].str.lower()
     table["name_first"] = table["name_first"].str.lower()
     return table
-
 
 def playerid_lookup(last, first=None):
     """
@@ -67,7 +80,7 @@ def playerid_lookup(last, first=None):
     ----------
     last: String
         Last name of the player
-    first: String
+    first: String, optional
         First name of the player
 
     Returns
@@ -75,21 +88,13 @@ def playerid_lookup(last, first=None):
     pandas dataframe
         containing the player's name, baseball-reference id, mlbam id, and years played
     """
-    # force input strings to lowercase
     last = last.lower()
-
-    if first:
-        first = first.lower()
+    first = first.lower() if first else None
 
     table = get_lookup_table()
 
-    if first is None:
-        results = table.loc[table["name_last"] == last]
-    else:
-        results = table.loc[
-            (table["name_last"] == last) & (table["name_first"] == first)
-        ]
+    query_string = f"name_last == '{last}'"
+    query_string += f" and name_first == '{first}'" if first else ""
+    results = table.query(query_string)
 
-    results = results.reset_index().drop(labels="index", axis=1)
-
-    return results
+    return results.reset_index(drop=True)
