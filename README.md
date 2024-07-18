@@ -15,14 +15,15 @@ git clone https://github.com/gdifiore/pyball.git
 
 cd pyball
 
-pip install . OR poetry install
+python -m venv .venv
+
+(activate .venv)
+
+poetry install
 ```
 
 ## Docs
-
 Read the [docs](https://gdifiore.github.io/pyball/docs/pyball/index.html) for function descriptions.
-
-For examples, look at my [MLBResearch Repo](https://github.com/gdifiore/MLBResearch/blob/main/Parse_BBRef_Table/bbref_table.ipynb) where I test most of the functions.
 
 ## Comments and Suggestions
 Leave any comments or suggestions in [an issue](https://github.com/SummitCode/pyball/issues/new) or directly make make [a pull request](https://github.com/SummitCode/pyball/compare) adding code.
@@ -33,3 +34,4 @@ Leave any comments or suggestions in [an issue](https://github.com/SummitCode/py
 
 ## TODO
 - update documentation
+- add checks to URLs passd into functions (e.g. team into team parsing)

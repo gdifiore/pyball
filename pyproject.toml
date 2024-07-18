@@ -13,14 +13,18 @@ packages = [{include = "pyball"}]
 [tool.poetry.dependencies]
 python = "^3.10.12"
 pandas = "^1.3.4"
-selenium = "^4.6.0"
+numpy = "1.26.4"
 bs4 = "^0.0.1"
 requests = "^2.26.0"
-webdriver_manager = "^3.5.2"
+playwright = "^1.45.0"
+lxml = "^5.2.2"
+
+[tool.poetry.scripts]
+post-install = "pyball:post_install"
 
 [tool.poetry.dev-dependencies]
 # Add your development dependencies here
 
-[[tool.poetry.source]]
-name = "pypi"
-url = "https://pypi.org/simple"
+#[[tool.poetry.source]]
+#name = "pypi"
+#url = "https://pypi.org/simple"

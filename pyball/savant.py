@@ -8,10 +8,10 @@
 
 import pandas as pd
 
-from pyball.utils import readURL
+from pyball.utils import read_url
 
 
-def findPercentilesTable(soup):
+def _find_percentiles_table(soup):
     """
     Function to find the stat percentiles table (Baseball Savant) in the soup
 
@@ -30,7 +30,7 @@ def findPercentilesTable(soup):
     return table
 
 
-def savantPercentileStats(url):
+def savant_percentile_stats(url):
     """
     Function to return the (Baseball Savant) percentile stats for a player as a pandas dataframe
 
@@ -44,15 +44,15 @@ def savantPercentileStats(url):
     pandas dataframe
         Contains the percentile stats for the player
     """
-    soup = readURL(url)
-    table = findPercentilesTable(soup)
+    soup = read_url(url)
+    table = _find_percentiles_table(soup)
 
     df = pd.read_html(str(table))[0]
 
     return df.dropna(how="all")
 
 
-def findStatcastPitchingStatsTable(soup):
+def _find_statcast_pitching_stats_table(soup):
     """
     Function to find the statcast pitching stats table (Baseball Savant) in the soup
 
@@ -73,7 +73,7 @@ def findStatcastPitchingStatsTable(soup):
     return table
 
 
-def savantPitchingStatcastStats(url):
+def savant_pitching_statcast_stats(url):
     """
     Function to return the (Baseball Savant) pitching stats for a player as a pandas dataframe
 
@@ -87,8 +87,8 @@ def savantPitchingStatcastStats(url):
     pandas dataframe
         Contains the savant pitching stats for the player
     """
-    soup = readURL(url)
-    table = findStatcastPitchingStatsTable(soup)
+    soup = read_url(url)
+    table = _find_statcast_pitching_stats_table(soup)
 
     df = pd.read_html(str(table))[0]
 
@@ -96,7 +96,7 @@ def savantPitchingStatcastStats(url):
     return df.dropna(how="all").drop(df.index[-1])
 
 
-def findStatcastBattingStatsTable(soup):
+def _find_statcast_batting_stats_table(soup):
     """
     Function to find the statcast batting stats table (Baseball Savant) in the soup
 
@@ -117,7 +117,7 @@ def findStatcastBattingStatsTable(soup):
     return table
 
 
-def savantBattingStatcastStats(url):
+def savant_batting_statcast_stats(url):
     """
     Function to return the (Baseball Savant) batting stats for a player as a pandas dataframe
 
@@ -131,8 +131,8 @@ def savantBattingStatcastStats(url):
     pandas dataframe
         Contains the savant batting stats for the player
     """
-    soup = readURL(url)
-    table = findStatcastBattingStatsTable(soup)
+    soup = read_url(url)
+    table = _find_statcast_batting_stats_table(soup)
 
     df = pd.read_html(str(table))[0]
 
@@ -140,7 +140,7 @@ def savantBattingStatcastStats(url):
     return df.dropna(how="all").drop(df.index[-1])
 
 
-def findBattedBallProfileTable(soup):
+def _find_batted_ball_profile_table(soup):
     """
     Function to find the batted ball profile table (Baseball Savant) in the soup
 
@@ -159,7 +159,7 @@ def findBattedBallProfileTable(soup):
     return table
 
 
-def savantBattedBallProfile(url):
+def savant_batted_ball_profile(url):
     """
     Function to return the (Baseball Savant) batted ball profile for a player as a pandas dataframe
 
@@ -173,15 +173,15 @@ def savantBattedBallProfile(url):
     pandas dataframe
         Contains the batted ball profile for the player
     """
-    soup = readURL(url)
-    table = findBattedBallProfileTable(soup)
+    soup = read_url(url)
+    table = _find_batted_ball_profile_table(soup)
 
     df = pd.read_html(str(table))[0]
 
     return df.dropna(how="all")
 
 
-def findPitchTrackingTable(soup):
+def _find_pitch_tracking_table(soup):
     """
     Function to find the pitch tracking table (Baseball Savant) in the soup
 
@@ -200,7 +200,7 @@ def findPitchTrackingTable(soup):
     return table
 
 
-def savantPitchTracking(url):
+def savant_pitch_tracking(url):
     """
     Function returns the (Baseball Savant) pitch-specific results for a player as a pandas dataframe
 
@@ -214,8 +214,8 @@ def savantPitchTracking(url):
     pandas dataframe
         Contains the pitch-specific results for the player
     """
-    soup = readURL(url)
-    table = findPitchTrackingTable(soup)
+    soup = read_url(url)
+    table = _find_pitch_tracking_table(soup)
 
     df = pd.read_html(str(table))[0]
 

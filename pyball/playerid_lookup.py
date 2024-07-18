@@ -12,7 +12,6 @@ import pandas as pd
 import requests
 import io
 
-
 def get_lookup_table():
     """
     Function to download a lookup table of all players
@@ -30,7 +29,8 @@ def get_lookup_table():
         file = f"people-{file_number:x}.csv"  # incrementing hex number
         try:
             response = requests.get(
-                f"https://raw.githubusercontent.com/chadwickbureau/register/master/data/{file}"
+                f"https://raw.githubusercontent.com/chadwickbureau/register/master/data/{file}",
+                timeout=10
             )
             response.raise_for_status()  # raise HTTPError if the status code indicates an error
             s = response.content

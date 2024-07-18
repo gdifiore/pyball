@@ -8,10 +8,10 @@
 
 import pandas as pd
 
-from pyball.utils import readURL
+from pyball.utils import read_url
 
 
-def findPitchingTable(soup):
+def _find_pitching_table(soup):
     """
     Function to find the pitching stats table (Baseball-Reference) in the soup
 
@@ -44,8 +44,8 @@ def pitching_stats(url):
     pandas dataframe
         Contains the pitching stats for the player
     """
-    soup = readURL(url)
-    table = findPitchingTable(soup)
+    soup = read_url(url)
+    table = _find_pitching_table(soup)
 
     df = pd.read_html(str(table))[0]
 

@@ -114,3 +114,4 @@ venv.bak/
 # Custom
 NOTES
 test.*
+*.lock

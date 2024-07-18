@@ -6,25 +6,39 @@
 # Description: File containing various utility functions used in pyball
 #
 
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
+import logging
+from functools import lru_cache, wraps
+from datetime import datetime, timedelta
 
-# This library is meant to run in a Jupyter Notebook
-# so storing the dict like this should be a decent solution
-# to not downloading the website every single run
-cache = dict()
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+def timed_lru_cache(seconds: int, maxsize: int = 128):
+    def wrapper_cache(func):
+        func = lru_cache(maxsize=maxsize)(func)
+        func.lifetime = timedelta(seconds=seconds)
+        func.expiration = datetime.utcnow() + func.lifetime
+
+        @wraps(func)
+        def wrapped_func(*args, **kwargs):
+            if datetime.utcnow() >= func.expiration:
+                func.cache_clear()
+                func.expiration = datetime.utcnow() + func.lifetime
+
+            return func(*args, **kwargs)
+
+        return wrapped_func
+
+    return wrapper_cache
 
 
-def readURL(url):
+@timed_lru_cache(seconds=86400)  # Cache for 1 day
+def read_url(url):
     """
-    Function to read a url and return the html content
+    Function to read a url and return the html content using Playwright
 
     Parameters
     ----------
@@ -36,43 +50,41 @@ def readURL(url):
     BeautifulSoup object
         Contains the html of the url
     """
-    if url not in cache:
-        options = Options()
-        options.add_argument("--ignore-certificate-errors")
-        options.add_argument("--incognito")
-        options.add_argument("--headless")
+    logger.info(f"Fetching new page: {url}")
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        try:
+            page.goto(url, wait_until="networkidle", timeout=60000)  # Increased timeout to 60 seconds
 
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
-        driver.get(url)
-        #  if the page is baseball savant, wait for it to fully load
-        if "baseballsavant" in url:
-            try:
-                print("savant, waiting")
-                WebDriverWait(driver, 30).until(
-                    EC.presence_of_element_located(
-                        (
-                            By.XPATH,
-                            "//div[@class='pitchingBreakdown']//table[@id='detailedPitches']",
-                        )
-                    )
-                )
-            except Exception as e:
-                print("An error occurred: ", str(e))
-        html = driver.page_source
-        driver.close()
+            # Specific handling for different sites
+            if "baseball-reference.com" in url:
+                logger.info("Detected Baseball-Reference page")
+                page.wait_for_selector('div#inner_nav', timeout=30000)
+            elif "baseballsavant" in url:
+                logger.info("Detected Baseball Savant page")
+                page.wait_for_selector("div.pitchingBreakdown table#detailedPitches", timeout=30000)
 
+            html = page.content()
+            logger.info("Page content retrieved successfully")
+        except PlaywrightTimeoutError as e:
+            logger.error(f"Timeout error occurred: {str(e)}")
+            html = page.content()  # Get whatever content is available
+        except Exception as e:
+            logger.error(f"An error occurred: {str(e)}")
+            html = None
+        finally:
+            browser.close()
+
+    if html:
         soup = BeautifulSoup(html, "html.parser")
-        # we haven't saved the URL this session yet, so put it in the cache
-        cache[url] = soup
+        return soup
     else:
-        # we've saved the URL during this session, so retrive the soup from the cache
-        soup = cache[url]
-
-    return soup
+        logger.warning("Failed to retrieve page content")
+        return None
 
 
-def makeBBRefURL(bbref_key):
+def make_bbref_url(bbref_key):
     """
     Function to generate baseball-reference url from bbref_key
 
@@ -92,7 +104,7 @@ def makeBBRefURL(bbref_key):
     return url
 
 
-def makeSavantURL(last, first, key_mlbam):
+def make_savant_url(last, first, key_mlbam):
     """
     Function to generate baseball savant url from last name, first name, and mlbam key
 
@@ -116,7 +128,7 @@ def makeSavantURL(last, first, key_mlbam):
     return url
 
 
-def createTeamURL(team, year):
+def create_team_url(team, year):
     """
     Function to create a baseball-reference team url from team and year
 
