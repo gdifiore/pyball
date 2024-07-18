@@ -20,6 +20,8 @@ python -m venv .venv
 (activate .venv)
 
 poetry install
+
+poetry run post-install
 ```
 
 ## Docs

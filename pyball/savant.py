@@ -8,7 +8,7 @@
 
 import pandas as pd
 
-from pyball.utils import read_url
+from pyball.utils import read_url#, is_savant_batting_url, is_savant_pitching_url
 
 
 def _find_percentiles_table(soup):

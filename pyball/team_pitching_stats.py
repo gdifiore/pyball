@@ -9,7 +9,7 @@
 
 import pandas as pd
 
-from pyball.utils import read_url
+from pyball.utils import read_url, is_team_url
 
 
 def _find_team_pitching_table(soup):
@@ -45,6 +45,9 @@ def team_pitching_stats(url):
     pandas dataframe
         containing the team batting stats for the team
     """
+    if not is_team_url(url):
+        return None
+
     soup = read_url(url)
     table = _find_team_pitching_table(soup)
 

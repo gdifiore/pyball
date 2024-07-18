@@ -6,27 +6,37 @@
 # Description: File containing various utility functions used in pyball
 #
 
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
-from bs4 import BeautifulSoup
-import logging
 from functools import lru_cache, wraps
 from datetime import datetime, timedelta
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+from bs4 import BeautifulSoup
+#import logging
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+#logging.basicConfig(level=logging.INFO)
+#logger = logging.getLogger(__name__)
 
 def timed_lru_cache(seconds: int, maxsize: int = 128):
+    """
+    A decorator that combines LRU caching with a time-based expiration.
+
+    Args:
+        seconds (int): The number of seconds after which the cache should expire.
+        maxsize (int, optional): The maximum number of function calls to cache. Defaults to 128.
+
+    Returns:
+        function: The decorated function.
+    """
     def wrapper_cache(func):
         func = lru_cache(maxsize=maxsize)(func)
         func.lifetime = timedelta(seconds=seconds)
-        func.expiration = datetime.utcnow() + func.lifetime
+        func.expiration = datetime.now() + func.lifetime
 
         @wraps(func)
         def wrapped_func(*args, **kwargs):
-            if datetime.utcnow() >= func.expiration:
+            if datetime.now() >= func.expiration:
                 func.cache_clear()
-                func.expiration = datetime.utcnow() + func.lifetime
+                func.expiration = datetime.now() + func.lifetime
 
             return func(*args, **kwargs)
 
@@ -50,28 +60,28 @@ def read_url(url):
     BeautifulSoup object
         Contains the html of the url
     """
-    logger.info(f"Fetching new page: {url}")
+    #logger.info(f"Fetching new page: {url}")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         try:
-            page.goto(url, wait_until="networkidle", timeout=60000)  # Increased timeout to 60 seconds
+            page.goto(url, wait_until="networkidle", timeout=60000)  # Increased timeout to 60s
 
             # Specific handling for different sites
             if "baseball-reference.com" in url:
-                logger.info("Detected Baseball-Reference page")
+                #logger.info("Detected Baseball-Reference page")
                 page.wait_for_selector('div#inner_nav', timeout=30000)
             elif "baseballsavant" in url:
-                logger.info("Detected Baseball Savant page")
+                #logger.info("Detected Baseball Savant page")
                 page.wait_for_selector("div.pitchingBreakdown table#detailedPitches", timeout=30000)
 
             html = page.content()
-            logger.info("Page content retrieved successfully")
-        except PlaywrightTimeoutError as e:
-            logger.error(f"Timeout error occurred: {str(e)}")
+            #logger.info("Page content retrieved successfully")
+        except PlaywrightTimeoutError:# as e:
+            #logger.error(f"Timeout error occurred: {str(e)}")
             html = page.content()  # Get whatever content is available
-        except Exception as e:
-            logger.error(f"An error occurred: {str(e)}")
+        except Exception:# as e:
+            #logger.error(f"An error occurred: {str(e)}")
             html = None
         finally:
             browser.close()
@@ -80,11 +90,11 @@ def read_url(url):
         soup = BeautifulSoup(html, "html.parser")
         return soup
     else:
-        logger.warning("Failed to retrieve page content")
+        #logger.warning("Failed to retrieve page content")
         return None
 
 
-def make_bbref_url(bbref_key):
+def make_bbref_player_url(bbref_key):
     """
     Function to generate baseball-reference url from bbref_key
 
@@ -104,7 +114,52 @@ def make_bbref_url(bbref_key):
     return url
 
 
-def make_savant_url(last, first, key_mlbam):
+def is_player_url(url):
+    """
+    Check if the given URL contains the word 'players'.
+
+    Args:
+        url (str): The URL to check.
+
+    Returns:
+        bool: True if the URL contains 'players', False otherwise.
+    """
+    return "players" in url
+
+
+def create_bbref_team_url(team, year):
+    """
+    Function to create a baseball-reference team url from team and year
+
+    Parameters
+    ----------
+    team: String
+        team name
+
+    Returns
+    ----------
+    String
+        baseball-reference team url
+    """
+    base_url = "https://www.baseball-reference.com/teams/"
+    url = base_url + team + "/" + year + ".shtml"
+
+    return url
+
+
+def is_team_url(url):
+    """
+    Check if the given URL contains the word 'teams'.
+
+    Args:
+        url (str): The URL to check.
+
+    Returns:
+        bool: True if the URL contains 'teams', False otherwise.
+    """
+    return "teams" in url
+
+def make_savant_player_url(last, first, key_mlbam):
     """
     Function to generate baseball savant url from last name, first name, and mlbam key
 
@@ -127,22 +182,26 @@ def make_savant_url(last, first, key_mlbam):
 
     return url
 
-
-def create_team_url(team, year):
+def is_savant_pitching_url(url):
     """
-    Function to create a baseball-reference team url from team and year
+    Check if the given URL contains the word 'pitching-mlb'.
 
-    Parameters
-    ----------
-    team: String
-        team name
+    Args:
+        url (str): The URL to check.
 
-    Returns
-    ----------
-    String
-        baseball-reference team url
+    Returns:
+        bool: True if the URL contains 'pitching-mlb', False otherwise.
     """
-    base_url = "https://www.baseball-reference.com/teams/"
-    url = base_url + team + "/" + year + ".shtml"
+    return "pitching-mlb" in url
 
-    return url
+def is_savant_batting_url(url):
+    """
+    Check if the given URL contains the word 'batting-mlb'.
+
+    Args:
+        url (str): The URL to check.
+
+    Returns:
+        bool: True if the URL contains 'batting-mlb', False otherwise.
+    """
+    return "batting-mlb" in url
