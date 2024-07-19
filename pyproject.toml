@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyball"
-version = "1.3.0"
+version = "1.4.0"
 description = "Python3 library for obtaining baseball information"
 authors = ["gdifiore"]
 readme = "README.md"
@@ -21,10 +21,3 @@ lxml = "^5.2.2"
 
 [tool.poetry.scripts]
 post-install = "pyball:post_install"
-
-[tool.poetry.dev-dependencies]
-# Add your development dependencies here
-
-#[[tool.poetry.source]]
-#name = "pypi"
-#url = "https://pypi.org/simple"

@@ -36,4 +36,4 @@ Leave any comments or suggestions in [an issue](https://github.com/SummitCode/py
 
 ## TODO
 - update documentation
-- add checks to URLs passd into functions (e.g. team into team parsing)
+- refactor into classes
