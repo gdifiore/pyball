@@ -8,7 +8,7 @@
 
 import pandas as pd
 
-from pyball.utils import read_url#, is_savant_batting_url, is_savant_pitching_url
+from pyball.utils import read_url
 
 
 def _find_percentiles_table(soup):
@@ -67,6 +67,9 @@ def _find_statcast_pitching_stats_table(soup):
         Contains the html of the statcast pitching stats table
     """
     div = soup.find("div", id="statcast_stats_pitching")
+    if div is None:
+        print("Not a pitcher page")
+        return None
     # get table inside div
     table = div.find("table")
 
@@ -90,6 +93,9 @@ def savant_pitching_statcast_stats(url):
     soup = read_url(url)
     table = _find_statcast_pitching_stats_table(soup)
 
+    if table is None:
+        return None
+
     df = pd.read_html(str(table))[0]
 
     # drop a row of all NA and drop last row of MLB average
@@ -112,6 +118,10 @@ def _find_statcast_batting_stats_table(soup):
     """
     # Find div with id 'statcast_glance_batter' and get table inside
     div = soup.find("div", id="statcast_glance_batter")
+    if div is None:
+        print("Not a pitcher page")
+        return None
+
     table = div.find("table")
 
     return table
@@ -133,6 +143,9 @@ def savant_batting_statcast_stats(url):
     """
     soup = read_url(url)
     table = _find_statcast_batting_stats_table(soup)
+
+    if table is None:
+        return None
 
     df = pd.read_html(str(table))[0]
 

@@ -10,11 +10,6 @@ from functools import lru_cache, wraps
 from datetime import datetime, timedelta
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from bs4 import BeautifulSoup
-#import logging
-
-# Set up logging
-#logging.basicConfig(level=logging.INFO)
-#logger = logging.getLogger(__name__)
 
 def timed_lru_cache(seconds: int, maxsize: int = 128):
     """
@@ -60,29 +55,22 @@ def read_url(url):
     BeautifulSoup object
         Contains the html of the url
     """
-    #logger.info(f"Fetching new page: {url}")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
+        html = None
         try:
-            page.goto(url, wait_until="networkidle", timeout=60000)  # Increased timeout to 60s
+            page.goto(url, wait_until="networkidle", timeout=60000)
 
             # Specific handling for different sites
             if "baseball-reference.com" in url:
-                #logger.info("Detected Baseball-Reference page")
                 page.wait_for_selector('div#inner_nav', timeout=30000)
             elif "baseballsavant" in url:
-                #logger.info("Detected Baseball Savant page")
                 page.wait_for_selector("div.pitchingBreakdown table#detailedPitches", timeout=30000)
 
             html = page.content()
-            #logger.info("Page content retrieved successfully")
-        except PlaywrightTimeoutError:# as e:
-            #logger.error(f"Timeout error occurred: {str(e)}")
+        except PlaywrightTimeoutError:
             html = page.content()  # Get whatever content is available
-        except Exception:# as e:
-            #logger.error(f"An error occurred: {str(e)}")
-            html = None
         finally:
             browser.close()
 
@@ -181,27 +169,3 @@ def make_savant_player_url(last, first, key_mlbam):
     url = base_url + last + "-" + first + "-" + key_mlbam
 
     return url
-
-def is_savant_pitching_url(url):
-    """
-    Check if the given URL contains the word 'pitching-mlb'.
-
-    Args:
-        url (str): The URL to check.
-
-    Returns:
-        bool: True if the URL contains 'pitching-mlb', False otherwise.
-    """
-    return "pitching-mlb" in url
-
-def is_savant_batting_url(url):
-    """
-    Check if the given URL contains the word 'batting-mlb'.
-
-    Args:
-        url (str): The URL to check.
-
-    Returns:
-        bool: True if the URL contains 'batting-mlb', False otherwise.
-    """
-    return "batting-mlb" in url
