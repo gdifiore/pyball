@@ -102,7 +102,7 @@ def make_bbref_player_url(bbref_key):
     return url
 
 
-def is_player_url(url):
+def is_bbref_player_url(url):
     """
     Check if the given URL contains the word 'players'.
 
@@ -112,7 +112,7 @@ def is_player_url(url):
     Returns:
         bool: True if the URL contains 'players', False otherwise.
     """
-    return "players" in url
+    return "players" in url and "baseball-reference" in url
 
 
 def create_bbref_team_url(team, year):
@@ -135,7 +135,7 @@ def create_bbref_team_url(team, year):
     return url
 
 
-def is_team_url(url):
+def is_bbref_team_url(url):
     """
     Check if the given URL contains the word 'teams'.
 
@@ -145,7 +145,7 @@ def is_team_url(url):
     Returns:
         bool: True if the URL contains 'teams', False otherwise.
     """
-    return "teams" in url
+    return "teams" in url and "baseball-reference" in url
 
 def make_savant_player_url(last, first, key_mlbam):
     """

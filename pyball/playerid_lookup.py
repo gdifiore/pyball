@@ -8,96 +8,110 @@
 #              Updated to new Github repo data source
 #
 
-import pandas as pd
-import requests
-import io
 from functools import lru_cache
+import io
+from typing import Optional
+import logging
+import requests
+import pandas as pd
 
-# Constants for the columns to keep in the dataframe
-COLUMNS_TO_KEEP = [
-    "name_last",
-    "name_first",
-    "key_bbref",
-    "key_mlbam",
-    "mlb_played_first",
-    "mlb_played_last",
-]
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-@lru_cache(maxsize=None)
-def download_file(file_number):
-    """
-    Helper function to download a single file from the GitHub repository
+class PlayerLookup:
+    BASE_URL = "https://raw.githubusercontent.com/chadwickbureau/register/master/data/"
+    COLUMNS_TO_KEEP = [
+        "name_last",
+        "name_first",
+        "key_bbref",
+        "key_mlbam",
+        "mlb_played_first",
+        "mlb_played_last",
+    ]
 
-    Parameters
-    ----------
-    file_number: int
-        The file number to download
+    @staticmethod
+    @lru_cache(maxsize=None)
+    def download_file(file_number: int) -> pd.DataFrame:
+        """
+        Helper function to download a single file from the GitHub repository
 
-    Returns
-    ----------
-    pandas dataframe
-        containing the data from the downloaded file
-    """
-    file = f"people-{file_number:x}.csv"  # incrementing hex number
-    response = requests.get(
-        f"https://raw.githubusercontent.com/chadwickbureau/register/master/data/{file}"
-    )
-    response.raise_for_status()  # raise HTTPError if the status code indicates an error
-    return pd.read_csv(
-        io.StringIO(response.content.decode("utf-8")),
-        dtype={"key_sr_nfl": object, "key_sr_nba": object, "key_sr_nhl": object},
-    )
+        Parameters:
+        -----------
+        file_number: int
+            The file number to download
 
-@lru_cache(maxsize=1)
-def get_lookup_table():
-    """
-    Function to download a lookup table of all players
+        Returns:
+        --------
+        pd.DataFrame
+            Containing the data from the downloaded file
+        """
+        file = f"people-{file_number:x}.csv"  # incrementing hex number
+        url = f"{PlayerLookup.BASE_URL}{file}"
 
-    Returns
-    ----------
-    pandas dataframe
-        containing the lookup table of all players
-    """
-    print("Gathering player lookup table. This may take a moment.")
-
-    table = pd.DataFrame()
-    file_number = 0
-    while True:
         try:
-            temp = download_file(file_number)
-            table = pd.concat([table, temp], ignore_index=True)
-            file_number += 1
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return pd.read_csv(
+                io.StringIO(response.content.decode("utf-8")),
+                dtype={"key_sr_nfl": object, "key_sr_nba": object, "key_sr_nhl": object},
+            )
         except requests.exceptions.HTTPError:
-            break
+            logger.warning("File not found: %s", url)
+            raise
 
-    table = table[COLUMNS_TO_KEEP]
-    table["name_last"] = table["name_last"].str.lower()
-    table["name_first"] = table["name_first"].str.lower()
-    return table
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def get_lookup_table() -> pd.DataFrame:
+        """
+        Function to download a lookup table of all players
 
-def playerid_lookup(last, first=None):
-    """
-    Function to lookup a player's baseball reference and mlbam id given their name, from the lookup table
+        Returns:
+        --------
+        pd.DataFrame
+            Containing the lookup table of all players
+        """
+        logger.info("Gathering player lookup table. This may take a moment.")
 
-    Parameters
-    ----------
-    last: String
-        Last name of the player
-    first: String, optional
-        First name of the player
+        table = pd.DataFrame()
+        file_number = 0
+        while True:
+            try:
+                temp = PlayerLookup.download_file(file_number)
+                table = pd.concat([table, temp], ignore_index=True)
+                file_number += 1
+            except requests.exceptions.HTTPError:
+                break
 
-    Returns
-    ----------
-    pandas dataframe
-        containing the player's name, baseball-reference id, mlbam id, and years played
-    """
-    last = last.lower()
-    first = first.lower() if first else None
+        table = table[PlayerLookup.COLUMNS_TO_KEEP]
+        table["name_last"] = table["name_last"].str.lower()
+        table["name_first"] = table["name_first"].str.lower()
+        return table
 
-    table = get_lookup_table()
+    @staticmethod
+    def playerid_lookup(last: str, first: Optional[str] = None) -> pd.DataFrame:
+        """
+        Function to lookup a player's baseball reference and mlbam id given their name, from
+        the lookup table
 
-    query_string = f"name_last == '{last}'"
-    query_string += f" and name_first == '{first}'" if first else ""
-    results = table.query(query_string)
+        Parameters:
+        -----------
+        last: str
+            Last name of the player
+        first: str, optional
+            First name of the player
 
-    return results.reset_index(drop=True)
+        Returns:
+        --------
+        pd.DataFrame
+            Containing the player's name, baseball-reference id, mlbam id, and years played
+        """
+        last = last.lower()
+        first = first.lower() if first else None
+
+        table = PlayerLookup.get_lookup_table()
+
+        query_string = f"name_last == '{last}'"
+        query_string += f" and name_first == '{first}'" if first else ""
+        results = table.query(query_string)
+
+        return results.reset_index(drop=True)
