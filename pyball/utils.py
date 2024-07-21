@@ -1,10 +1,8 @@
-#
 # File: utils.py
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
 # Date: 9/14/2022
 #
 # Description: File containing various utility functions used in pyball
-#
 
 from functools import lru_cache, wraps
 from datetime import datetime, timedelta

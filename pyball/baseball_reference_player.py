@@ -1,10 +1,8 @@
-#
 # File: baseball_reference_player.py
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
 # (c) 2022-2024
 #
 # Description: File containing functions to obtain player stats from Baseball-Reference
-#
 
 from typing import Optional
 import logging
@@ -36,130 +34,61 @@ class BaseballReferencePlayerStatsScraper:
         Retrieves the batting statistics for a player from the given URL.
     pitching_stats(url: str) -> Optional[pd.DataFrame]:
         Retrieves the pitching statistics for a player from the given URL.
-
-    Private Methods:
-    ----------------
-    _find_batting_table(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
-        Locates the batting statistics table in the parsed HTML.
-    _find_pitching_table(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
-        Locates the pitching statistics table in the parsed HTML.
-
-    Note:
-    -----
-    This class relies on the structure of Baseball-Reference pages as of 2024.
-    Changes to the website structure may affect the functionality of this scraper.
     """
-    PLAYER_BATTING_TABLE_ID = "batting_standard"
-    PLAYER_PICHING_TABLE_ID = "pitching_standard"
+    TABLE_IDS = {
+        'batting': 'batting_standard',
+        'pitching': 'pitching_standard'
+    }
 
-    @staticmethod
-    def _find_batting_table(soup: BeautifulSoup) -> Optional[BeautifulSoup]:
-        """
-        Find the batting stats table (Baseball-Reference) in the soup
+    def __init__(self, url: str):
+        if not is_bbref_player_url(url):
+            raise ValueError(f"Invalid player URL: {url}")
+        self.url = url
+        self.soup = self._get_soup()
 
-        Parameters:
-        -----------
-        soup: BeautifulSoup
-            Contains the html of the player page
+    def _get_soup(self) -> Optional[BeautifulSoup]:
+        soup = read_url(self.url)
+        if soup is None:
+            logger.warning("Failed to retrieve content from URL: %s", self.url)
+        return soup
 
-        Returns:
-        --------
-        Optional[BeautifulSoup]
-            Contains the html of the batting stats table, or None if not found
-        """
-        return soup.find("table", id=BaseballReferencePlayerStatsScraper.PLAYER_BATTING_TABLE_ID)
+    def _find_table(self, table_id: str) -> Optional[BeautifulSoup]:
+        return self.soup.find("table", id=self.TABLE_IDS[table_id])
 
-    @staticmethod
-    def batting_stats(url: str) -> Optional[pd.DataFrame]:
+    def _get_dataframe(self, table_id: str) -> Optional[pd.DataFrame]:
+        table = self._find_table(table_id)
+        if table is None:
+            logger.warning("%s stats table not found for URL: %s", table_id.capitalize(), self.url)
+            return None
+
+        try:
+            df = pd.read_html(str(table))[0]
+            return df.dropna(how="all")
+        except ValueError as e:
+            logger.error("Error parsing %s stats table (no tables found): %s", table_id, str(e))
+            return None
+        except Exception as e:
+            logger.error("Error parsing %s stats table: %s", table_id, str(e))
+            return None
+
+    def batting_stats(self) -> Optional[pd.DataFrame]:
         """
         Return the (Baseball-Reference) batting stats for a player as a pandas dataframe
-
-        Parameters:
-        -----------
-        url: str
-            URL of the player page
 
         Returns:
         --------
         Optional[pd.DataFrame]
             Contains the batting stats for the player, or None if not available
         """
-        if not is_bbref_player_url(url):
-            logger.warning("Invalid player URL: %s", url)
-            return None
+        return self._get_dataframe('batting')
 
-        soup = read_url(url)
-        if soup is None:
-            logger.warning("Failed to retrieve content from URL: %s", url)
-            return None
-
-        table = BaseballReferencePlayerStatsScraper._find_batting_table(soup)
-        if table is None:
-            logger.warning("Batting stats table not found for URL: %s", url)
-            return None
-
-        try:
-            df = pd.read_html(str(table))[0]
-            return df.dropna(how="all")
-        except ValueError as e:
-            logger.error("Error parsing batting stats table (no tables found): %s", str(e))
-            return None
-        except Exception as e:
-            logger.error("Error parsing batting stats table: %s", str(e))
-            return None
-
-    @staticmethod
-    def _find_pitching_table(soup):
-        """
-        Function to find the pitching stats table (Baseball-Reference) in the soup
-
-        Parameters
-        ----------
-        soup: BeautifulSoup object
-            Contains the html of the player page
-
-        Returns
-        ----------
-        BeautifulSoup object
-            Contains the html of the pitching stats table
-        """
-        return soup.find("table", id=BaseballReferencePlayerStatsScraper.PLAYER_PICHING_TABLE_ID)
-
-    @staticmethod
-    def pitching_stats(url: str) -> Optional[pd.DataFrame]:
+    def pitching_stats(self) -> Optional[pd.DataFrame]:
         """
         Return the (Baseball-Reference) pitching stats for a player as a pandas dataframe
-
-        Parameters:
-        -----------
-        url: str
-            URL of the player page
 
         Returns:
         --------
         Optional[pd.DataFrame]
             Contains the pitching stats for the player, or None if not available
         """
-        if not is_bbref_player_url(url):
-            logger.warning("Invalid player URL: %s", url)
-            return None
-
-        soup = read_url(url)
-        if soup is None:
-            logger.warning("Failed to retrieve content from URL: %s", url)
-            return None
-
-        table = BaseballReferencePlayerStatsScraper._find_pitching_table(soup)
-        if table is None:
-            logger.warning("Pitching stats table not found for URL: %s", url)
-            return None
-
-        try:
-            df = pd.read_html(str(table))[0]
-            return df.dropna(how="all")
-        except ValueError as e:
-            logger.error("Error parsing pitching stats table (no tables found): %s", str(e))
-            return None
-        except Exception as e:
-            logger.error("Unexpected error parsing pitching stats table: %s", str(e))
-            return None
+        return self._get_dataframe('pitching')
