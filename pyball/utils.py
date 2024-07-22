@@ -164,6 +164,6 @@ def make_savant_player_url(last, first, key_mlbam):
         baseball savant url of the player
     """
     base_url = "https://baseballsavant.mlb.com/savant-player/"
-    url = base_url + last + "-" + first + "-" + key_mlbam
+    url = base_url + first + "-" + last + "-" + key_mlbam
 
     return url

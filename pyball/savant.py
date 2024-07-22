@@ -38,7 +38,12 @@ class SavantScraper:
     def _find_table(self, table_id: str) -> Optional[BeautifulSoup]:
         table = self.soup.find("table", id=self.TABLE_IDS[table_id])
         if table is None:
-            logger.warning("Table with id '%s' not found for URL: %s", table_id, self.url)
+            # Check if the table is inside a div
+            div = self.soup.find("div", id=self.TABLE_IDS[table_id])
+            if div is not None:
+                table = div.find("table")
+        if table is None:
+            logger.warning("Table with id '%s' not found for URL: %s", self.TABLE_IDS[table_id], self.url)
         return table
 
     def _get_dataframe(self, table_id: str) -> Optional[pd.DataFrame]:
