@@ -22,12 +22,17 @@ class BaseballReferencePlayerStatsScraper:
     This class provides methods to extract batting and pitching statistics
     for baseball players from their Baseball-Reference profile pages.
 
+    Attributes:
+    -----------
+    url : str
+        The URL of the Baseball Savant page to scrape.
+
     Methods:
     --------
-    batting_stats() -> Optional[pd.DataFrame]:
+    batting_stats(self) -> Optional[pd.DataFrame]:
         Retrieves the batting statistics for the player.
 
-    pitching_stats() -> Optional[pd.DataFrame]:
+    pitching_stats(self) -> Optional[pd.DataFrame]:
         Retrieves the pitching statistics for the player.
     """
 

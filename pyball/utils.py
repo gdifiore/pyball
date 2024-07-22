@@ -47,12 +47,12 @@ def read_url(url):
     Parameters
     ----------
     url: String
-        url to read
+        The URL to read.
 
     Returns
     ----------
     BeautifulSoup object
-        Contains the html of the url
+        Contains the HTML content of the URL.
     """
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
