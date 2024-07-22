@@ -1,5 +1,5 @@
-import pytest
 from pyball import utils
+
 
 def test_utils():
     result1 = utils.make_bbref_player_url("ramirjo01")

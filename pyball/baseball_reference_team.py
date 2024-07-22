@@ -14,14 +14,23 @@ from pyball.utils import read_url, is_bbref_team_url
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class BaseballReferenceTeamStatsScraper:
     """
     A class for scraping team statistics from Baseball-Reference.
 
     This class provides methods to extract batting and pitching statistics
     for baseball teams from their Baseball-Reference pages.
-    """
 
+    Methods:
+    --------
+    batting_stats(self) -> Optional[pd.DataFrame]
+        Returns the batting stats for the team as a pandas DataFrame.
+
+    pitching_stats(self) -> Optional[pd.DataFrame]
+        Returns the pitching stats for the team as a pandas DataFrame.
+    """
+    
     TABLE_IDS = {
         'batting': 'team_batting',
         'pitching': 'team_pitching'

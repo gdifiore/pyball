@@ -1,6 +1,6 @@
-import pytest
 import pandas as pd
 from pyball.playerid_lookup import PlayerLookup
+
 
 def test_playerid_lookup():
     client = PlayerLookup()

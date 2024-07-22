@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from bs4 import BeautifulSoup
 
+
 def timed_lru_cache(seconds: int, maxsize: int = 128):
     """
     A decorator that combines LRU caching with a time-based expiration.
@@ -68,7 +69,7 @@ def read_url(url):
 
             html = page.content()
         except PlaywrightTimeoutError:
-            html = page.content()  # Get whatever content is available
+            html = page.content()
         finally:
             browser.close()
 
@@ -76,7 +77,6 @@ def read_url(url):
         soup = BeautifulSoup(html, "html.parser")
         return soup
     else:
-        #logger.warning("Failed to retrieve page content")
         return None
 
 

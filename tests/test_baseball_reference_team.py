@@ -1,6 +1,6 @@
-import pytest
 import pandas as pd
 from pyball.baseball_reference_team import BaseballReferenceTeamStatsScraper
+
 
 def test_baseball_reference_player():
     url = "https://www.baseball-reference.com/teams/LAD/2017.shtml"

@@ -17,6 +17,7 @@ import requests
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class PlayerLookup:
     REGISTRY_URL = "https://github.com/chadwickbureau/register/archive/refs/heads/master.zip"
     CSV_FILE_PATTERN = re.compile("/people.+csv$")
