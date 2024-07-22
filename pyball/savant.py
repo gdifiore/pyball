@@ -1,235 +1,120 @@
-#
 # File: savant.py
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
 # (c) 2022-2024
 #
 # Description: File containing functions to obtain player savant data
-#
 
+from typing import Optional
+import logging
 import pandas as pd
+from bs4 import BeautifulSoup
 
 from pyball.utils import read_url
 
-
-def _find_percentiles_table(soup):
-    """
-    Function to find the stat percentiles table (Baseball Savant) in the soup
-
-    Parameters
-    ----------
-    soup : BeautifulSoup object
-        Contains the html of the player page
-
-    Returns
-    -------
-    BeautifulSoup object
-        Contains the html of the savant stat percentiles table
-    """
-    table = soup.find("table", id="percentileRankings")
-
-    return table
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-def savant_percentile_stats(url):
-    """
-    Function to return the (Baseball Savant) percentile stats for a player as a pandas dataframe
+class SavantScraper:
+    TABLE_IDS = {
+        'percentile': 'percentileRankings',
+        'pitching': 'statcast_stats_pitching',
+        'batting': 'statcast_glance_batter',
+        'batted_ball': 'playeDiscipline',
+        'pitch_tracking': 'detailedPitches'
+    }
 
-    Parameters
-    ----------
-    url : String
-        url of the player page
+    def __init__(self, url: str):
+        self.url = url
+        self.soup = self._get_soup()
+        if self.soup is None:
+            logger.error("Failed to initialize SavantScraper with URL: %s", url)
 
-    Returns
-    ----------
-    pandas dataframe
-        Contains the percentile stats for the player
-    """
-    soup = read_url(url)
-    table = _find_percentiles_table(soup)
+    def _get_soup(self) -> Optional[BeautifulSoup]:
+        soup = read_url(self.url)
+        if soup is None:
+            logger.warning("Failed to retrieve content from URL: %s", self.url)
+        return soup
 
-    df = pd.read_html(str(table))[0]
+    def _find_table(self, table_id: str) -> Optional[BeautifulSoup]:
+        table = self.soup.find("table", id=self.TABLE_IDS[table_id])
+        if table is None:
+            # Check if the table is inside a div
+            div = self.soup.find("div", id=self.TABLE_IDS[table_id])
+            if div is not None:
+                table = div.find("table")
+        if table is None:
+            logger.warning("Table with id '%s' not found for URL: %s", self.TABLE_IDS[table_id], self.url)
+        return table
 
-    return df.dropna(how="all")
+    def _get_dataframe(self, table_id: str) -> Optional[pd.DataFrame]:
+        table = self._find_table(table_id)
+        if table is None:
+            return None
+        try:
+            df = pd.read_html(str(table))[0]
+            df = df.dropna(how="all")
+            if table_id in ['pitching', 'batting'] and not df.empty:
+                df = df.drop(df.index[-1])  # drop last row of MLB average
+            return df
+        except ValueError as e:
+            logger.error("Error parsing %s table (no tables found): %s", table_id, str(e))
+            return None
+        except Exception as e:
+            logger.error("Unexpected error parsing %s table: %s", table_id, str(e))
+            return None
 
+    def get_percentile_stats(self) -> Optional[pd.DataFrame]:
+        """
+        Returns the (Baseball Savant) percentile stats for a player as a pandas dataframe.
 
-def _find_statcast_pitching_stats_table(soup):
-    """
-    Function to find the statcast pitching stats table (Baseball Savant) in the soup
+        Returns:
+        --------
+        pandas.DataFrame or None
+            Contains the percentile stats for the player, or None if not found.
+        """
+        return self._get_dataframe('percentile')
 
-    Parameters
-    ----------
-    soup : BeautifulSoup object
-        Contains the html of the player page
+    def get_pitching_stats(self) -> Optional[pd.DataFrame]:
+        """
+        Returns the (Baseball Savant) pitching stats for a player as a pandas dataframe.
 
-    Returns
-    ----------
-    BeautifulSoup object
-        Contains the html of the statcast pitching stats table
-    """
-    div = soup.find("div", id="statcast_stats_pitching")
-    if div is None:
-        print("Not a pitcher page")
-        return None
-    # get table inside div
-    table = div.find("table")
+        Returns:
+        --------
+        pandas.DataFrame or None
+            Contains the savant pitching stats for the player, or None if not found.
+        """
+        return self._get_dataframe('pitching')
 
-    return table
+    def get_batting_stats(self) -> Optional[pd.DataFrame]:
+        """
+        Returns the (Baseball Savant) batting stats for a player as a pandas dataframe.
 
+        Returns:
+        --------
+        pandas.DataFrame or None
+            Contains the savant batting stats for the player, or None if not found.
+        """
+        return self._get_dataframe('batting')
 
-def savant_pitching_statcast_stats(url):
-    """
-    Function to return the (Baseball Savant) pitching stats for a player as a pandas dataframe
+    def get_batted_ball_profile(self) -> Optional[pd.DataFrame]:
+        """
+        Returns the (Baseball Savant) batted ball profile for a player as a pandas dataframe.
 
-    Parameters
-    ----------
-    url : String
-        url of the player page
+        Returns:
+        --------
+        pandas.DataFrame or None
+            Contains the batted ball profile for the player, or None if not found.
+        """
+        return self._get_dataframe('batted_ball')
 
-    Returns
-    ----------
-    pandas dataframe
-        Contains the savant pitching stats for the player
-    """
-    soup = read_url(url)
-    table = _find_statcast_pitching_stats_table(soup)
+    def get_pitch_tracking(self) -> Optional[pd.DataFrame]:
+        """
+        Returns the (Baseball Savant) pitch-specific results for a player as a pandas dataframe.
 
-    if table is None:
-        return None
-
-    df = pd.read_html(str(table))[0]
-
-    # drop a row of all NA and drop last row of MLB average
-    return df.dropna(how="all").drop(df.index[-1])
-
-
-def _find_statcast_batting_stats_table(soup):
-    """
-    Function to find the statcast batting stats table (Baseball Savant) in the soup
-
-    Parameters
-    ----------
-    soup : BeautifulSoup object
-        Contains the html of the player page
-
-    Returns
-    ----------
-    BeautifulSoup object
-        Contains the html of the statcast batting stats table
-    """
-    # Find div with id 'statcast_glance_batter' and get table inside
-    div = soup.find("div", id="statcast_glance_batter")
-    if div is None:
-        print("Not a pitcher page")
-        return None
-
-    table = div.find("table")
-
-    return table
-
-
-def savant_batting_statcast_stats(url):
-    """
-    Function to return the (Baseball Savant) batting stats for a player as a pandas dataframe
-
-    Parameters
-    ----------
-    url : String
-        url of the player page
-
-    Returns
-    ----------
-    pandas dataframe
-        Contains the savant batting stats for the player
-    """
-    soup = read_url(url)
-    table = _find_statcast_batting_stats_table(soup)
-
-    if table is None:
-        return None
-
-    df = pd.read_html(str(table))[0]
-
-    # drop a row of all NA and drop last row of MLB average
-    return df.dropna(how="all").drop(df.index[-1])
-
-
-def _find_batted_ball_profile_table(soup):
-    """
-    Function to find the batted ball profile table (Baseball Savant) in the soup
-
-    Parameters
-    ----------
-    soup : BeautifulSoup object
-        Contains the html of the player page
-
-    Returns
-    ----------
-    BeautifulSoup object
-        Contains the html of the batted ball profile table
-    """
-    table = soup.find("table", id="playeDiscipline")
-
-    return table
-
-
-def savant_batted_ball_profile(url):
-    """
-    Function to return the (Baseball Savant) batted ball profile for a player as a pandas dataframe
-
-    Parameters
-    ----------
-    url : String
-        url of the player page
-
-    Returns
-    ----------
-    pandas dataframe
-        Contains the batted ball profile for the player
-    """
-    soup = read_url(url)
-    table = _find_batted_ball_profile_table(soup)
-
-    df = pd.read_html(str(table))[0]
-
-    return df.dropna(how="all")
-
-
-def _find_pitch_tracking_table(soup):
-    """
-    Function to find the pitch tracking table (Baseball Savant) in the soup
-
-    Parameters
-    ----------
-    soup : BeautifulSoup object
-        Contains the html of the player page
-
-    Returns
-    ----------
-    BeautifulSoup object
-        Contains the html of the pitch tracking table
-    """
-    table = soup.find("table", id="detailedPitches")
-
-    return table
-
-
-def savant_pitch_tracking(url):
-    """
-    Function returns the (Baseball Savant) pitch-specific results for a player as a pandas dataframe
-
-    Parameters
-    ----------
-    url : String
-        url of the player page
-
-    Returns
-    ----------
-    pandas dataframe
-        Contains the pitch-specific results for the player
-    """
-    soup = read_url(url)
-    table = _find_pitch_tracking_table(soup)
-
-    df = pd.read_html(str(table))[0]
-
-    return df.dropna(how="all")
+        Returns:
+        --------
+        pandas.DataFrame or None
+            Contains the pitch-specific results for the player, or None if not found.
+        """
+        return self._get_dataframe('pitch_tracking')

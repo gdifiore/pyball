@@ -1,103 +1,120 @@
-#
 # File: playerid_lookup.py
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
 # (c) 2022-2024
 #
-# Description: File containing functions to obtain player (id) information from a lookup table
-#              Modified to only gets name, baseball-reference/mlbam key and years played
-#              Updated to new Github repo data source
-#
+# Description: File containing functions to obtain player (id) information
+# on various statistic sites from a lookup table.
 
+import io
+import re
+import zipfile
+from functools import lru_cache
+import unicodedata
+import logging
 import pandas as pd
 import requests
-import io
-from functools import lru_cache
 
-# Constants for the columns to keep in the dataframe
-COLUMNS_TO_KEEP = [
-    "name_last",
-    "name_first",
-    "key_bbref",
-    "key_mlbam",
-    "mlb_played_first",
-    "mlb_played_last",
-]
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-@lru_cache(maxsize=None)
-def download_file(file_number):
-    """
-    Helper function to download a single file from the GitHub repository
 
-    Parameters
-    ----------
-    file_number: int
-        The file number to download
+class PlayerLookup:
+    REGISTRY_URL = "https://github.com/chadwickbureau/register/archive/refs/heads/master.zip"
+    CSV_FILE_PATTERN = re.compile("/people.+csv$")
 
-    Returns
-    ----------
-    pandas dataframe
-        containing the data from the downloaded file
-    """
-    file = f"people-{file_number:x}.csv"  # incrementing hex number
-    response = requests.get(
-        f"https://raw.githubusercontent.com/chadwickbureau/register/master/data/{file}"
-    )
-    response.raise_for_status()  # raise HTTPError if the status code indicates an error
-    return pd.read_csv(
-        io.StringIO(response.content.decode("utf-8")),
-        dtype={"key_sr_nfl": object, "key_sr_nba": object, "key_sr_nhl": object},
-    )
+    def __init__(self):
+        self.registry = self.load_player_registry()
 
-@lru_cache(maxsize=1)
-def get_lookup_table():
-    """
-    Function to download a lookup table of all players
+    @staticmethod
+    def _find_csv_files(zip_archive: zipfile.ZipFile):
+        return [
+            file for file in zip_archive.infolist()
+            if re.search(PlayerLookup.CSV_FILE_PATTERN, file.filename)
+        ]
 
-    Returns
-    ----------
-    pandas dataframe
-        containing the lookup table of all players
-    """
-    print("Gathering player lookup table. This may take a moment.")
+    @staticmethod
+    def _compile_player_data(zip_archive: zipfile.ZipFile) -> pd.DataFrame:
+        dataframes = [
+            pd.read_csv(io.BytesIO(zip_archive.read(csv_file.filename)), low_memory=False)
+            for csv_file in PlayerLookup._find_csv_files(zip_archive)
+        ]
+        return pd.concat(dataframes, axis=0)
 
-    table = pd.DataFrame()
-    file_number = 0
-    while True:
-        try:
-            temp = download_file(file_number)
-            table = pd.concat([table, temp], ignore_index=True)
-            file_number += 1
-        except requests.exceptions.HTTPError:
-            break
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def fetch_chadwick_data() -> pd.DataFrame:
+        """
+        Fetches and processes player data from the Chadwick Register.
 
-    table = table[COLUMNS_TO_KEEP]
-    table["name_last"] = table["name_last"].str.lower()
-    table["name_first"] = table["name_first"].str.lower()
-    return table
+        Returns:
+            pd.DataFrame: A DataFrame containing player data from the Chadwick Register.
+        """
+        logger.info('Fetching player registry. This may take a moment.')
+        response = requests.get(PlayerLookup.REGISTRY_URL, timeout=10)
+        zip_content = io.BytesIO(response.content)
 
-def playerid_lookup(last, first=None):
-    """
-    Function to lookup a player's baseball reference and mlbam id given their name, from the lookup table
+        mlb_columns = ['key_retro', 'key_bbref', 'key_fangraphs', 'mlb_played_first', 'mlb_played_last']
+        essential_columns = ['name_last', 'name_first', 'key_mlbam'] + mlb_columns
 
-    Parameters
-    ----------
-    last: String
-        Last name of the player
-    first: String, optional
-        First name of the player
+        with zipfile.ZipFile(zip_content) as archive:
+            data = PlayerLookup._compile_player_data(archive)[essential_columns]
 
-    Returns
-    ----------
-    pandas dataframe
-        containing the player's name, baseball-reference id, mlbam id, and years played
-    """
-    last = last.lower()
-    first = first.lower() if first else None
+        # Filter for MLB players and clean data
+        data = data.dropna(how='all', subset=mlb_columns).reset_index(drop=True)
+        data[['key_mlbam', 'key_fangraphs']] = data[['key_mlbam', 'key_fangraphs']].fillna(-1).astype(int)
 
-    table = get_lookup_table()
+        return data
 
-    query_string = f"name_last == '{last}'"
-    query_string += f" and name_first == '{first}'" if first else ""
-    results = table.query(query_string)
+    @staticmethod
+    def load_player_registry():
+        """
+        Loads and preprocesses the player registry.
 
-    return results.reset_index(drop=True)
+                Returns:
+            pandas.DataFrame: The preprocessed player registry.
+        """
+        registry = PlayerLookup.fetch_chadwick_data()
+        registry[['name_last', 'name_first']] = registry[['name_last', 'name_first']].apply(lambda x: x.str.lower())
+        return registry
+
+    @staticmethod
+    def remove_accents(text: str) -> str:
+        """
+        Removes accents marks from a given string.
+
+        Args:
+                text (str): The input string from which accents marks will be removed.
+
+        Returns:
+            str: The input string without any accents marks.
+        """
+        normalized = unicodedata.normalize('NFD', str(text))
+        return ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
+
+    def search(self, last_name: str, first_name: str = None, ignore_accents: bool = True) -> pd.DataFrame:
+        """
+        Searches for a player in the registry based on their name.
+
+        Parameters:
+        - last_name (str): The last name of the player to search for.
+        - first_name (str, optional): The first name of the player to search for. Defaults to None.
+        - ignore_accents (bool, optional): Whether to ignore accents in the search. Defaults to True.
+
+        Returns:
+        - pd.DataFrame: A DataFrame containing the search results.
+        """
+        last_name = last_name.lower()
+        first_name = first_name.lower() if first_name else None
+
+        if ignore_accents:
+            last_name = self.remove_accents(last_name)
+            first_name = self.remove_accents(first_name) if first_name else None
+            self.registry['name_last'] = self.registry['name_last'].apply(self.remove_accents)
+            self.registry['name_first'] = self.registry['name_first'].apply(self.remove_accents)
+
+        if first_name:
+            results = self.registry[(self.registry['name_last'] == last_name) & (self.registry['name_first'] == first_name)]
+        else:
+            results = self.registry[self.registry['name_last'] == last_name]
+
+        return results.reset_index(drop=True)

@@ -1,13 +1,12 @@
-name = "pyball"
-from .playerid_lookup import *
-from .utils import *
-from .batting_stats import *
-from .pitching_stats import *
-from .team_batting_stats import *
-from .team_pitching_stats import *
-from .savant import *
+"""
+This is the pyball module.
+"""
 
 import subprocess
 
+
 def post_install():
+    """
+    Run the playwright install command.
+    """
     subprocess.run(["playwright", "install"], check=True)

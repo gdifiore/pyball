@@ -1,15 +1,14 @@
-#
 # File: utils.py
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
 # Date: 9/14/2022
 #
 # Description: File containing various utility functions used in pyball
-#
 
 from functools import lru_cache, wraps
 from datetime import datetime, timedelta
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from bs4 import BeautifulSoup
+
 
 def timed_lru_cache(seconds: int, maxsize: int = 128):
     """
@@ -70,7 +69,7 @@ def read_url(url):
 
             html = page.content()
         except PlaywrightTimeoutError:
-            html = page.content()  # Get whatever content is available
+            html = page.content()
         finally:
             browser.close()
 
@@ -78,7 +77,6 @@ def read_url(url):
         soup = BeautifulSoup(html, "html.parser")
         return soup
     else:
-        #logger.warning("Failed to retrieve page content")
         return None
 
 
@@ -102,7 +100,7 @@ def make_bbref_player_url(bbref_key):
     return url
 
 
-def is_player_url(url):
+def is_bbref_player_url(url):
     """
     Check if the given URL contains the word 'players'.
 
@@ -112,7 +110,7 @@ def is_player_url(url):
     Returns:
         bool: True if the URL contains 'players', False otherwise.
     """
-    return "players" in url
+    return "players" in url and "baseball-reference" in url
 
 
 def create_bbref_team_url(team, year):
@@ -135,7 +133,7 @@ def create_bbref_team_url(team, year):
     return url
 
 
-def is_team_url(url):
+def is_bbref_team_url(url):
     """
     Check if the given URL contains the word 'teams'.
 
@@ -145,7 +143,8 @@ def is_team_url(url):
     Returns:
         bool: True if the URL contains 'teams', False otherwise.
     """
-    return "teams" in url
+    return "teams" in url and "baseball-reference" in url
+
 
 def make_savant_player_url(last, first, key_mlbam):
     """
@@ -166,6 +165,6 @@ def make_savant_player_url(last, first, key_mlbam):
         baseball savant url of the player
     """
     base_url = "https://baseballsavant.mlb.com/savant-player/"
-    url = base_url + last + "-" + first + "-" + key_mlbam
+    url = base_url + first + "-" + last + "-" + key_mlbam
 
     return url
