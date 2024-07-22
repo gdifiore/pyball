@@ -2,106 +2,118 @@
 # Author: Gabriel DiFiore <difioregabe@gmail.com>
 # (c) 2022-2024
 #
-# Description: File containing functions to obtain player (id) information from a lookup table
-#              Modified to only gets name, baseball-reference/mlbam key and years played
-#              Updated to new Github repo data source
+# Description: File containing functions to obtain player (id) information
+# on various statistic sites from a lookup table.
 
 import io
 import re
 import zipfile
-from typing import List, Tuple
-import pandas as pd
-import requests
 from functools import lru_cache
 import unicodedata
-from difflib import get_close_matches
-
 import logging
+import pandas as pd
+import requests
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class PlayerLookup:
-    BASE_URL = "https://github.com/chadwickbureau/register/archive/refs/heads/master.zip"
-    PEOPLE_FILE_PATTERN = re.compile("/people.+csv$")
+    REGISTRY_URL = "https://github.com/chadwickbureau/register/archive/refs/heads/master.zip"
+    CSV_FILE_PATTERN = re.compile("/people.+csv$")
 
     def __init__(self):
-        self.table = self.get_lookup_table()
+        self.registry = self.load_player_registry()
 
     @staticmethod
-    def _extract_people_files(zip_archive: zipfile.ZipFile):
-        return filter(
-            lambda zip_info: re.search(PlayerLookup.PEOPLE_FILE_PATTERN, zip_info.filename),
-            zip_archive.infolist(),
-        )
+    def _find_csv_files(zip_archive: zipfile.ZipFile):
+        return [
+            file for file in zip_archive.infolist()
+            if re.search(PlayerLookup.CSV_FILE_PATTERN, file.filename)
+        ]
 
     @staticmethod
-    def _extract_people_table(zip_archive: zipfile.ZipFile) -> pd.DataFrame:
-        dfs = map(
-            lambda zip_info: pd.read_csv(
-                io.BytesIO(zip_archive.read(zip_info.filename)),
-                low_memory=False
-            ),
-            PlayerLookup._extract_people_files(zip_archive),
-        )
-        return pd.concat(dfs, axis=0)
+    def _compile_player_data(zip_archive: zipfile.ZipFile) -> pd.DataFrame:
+        dataframes = [
+            pd.read_csv(io.BytesIO(zip_archive.read(csv_file.filename)), low_memory=False)
+            for csv_file in PlayerLookup._find_csv_files(zip_archive)
+        ]
+        return pd.concat(dataframes, axis=0)
 
     @staticmethod
     @lru_cache(maxsize=1)
-    def chadwick_register() -> pd.DataFrame:
-        logger.info('Gathering player lookup table. This may take a moment.')
-        s = requests.get(PlayerLookup.BASE_URL).content
-        mlb_only_cols = ['key_retro', 'key_bbref', 'key_fangraphs', 'mlb_played_first', 'mlb_played_last']
-        cols_to_keep = ['name_last', 'name_first', 'key_mlbam'] + mlb_only_cols
-        table = PlayerLookup._extract_people_table(
-            zipfile.ZipFile(io.BytesIO(s))
-        ).loc[:, cols_to_keep]
+    def fetch_chadwick_data() -> pd.DataFrame:
+        """
+        Fetches and processes player data from the Chadwick Register.
 
-        table.dropna(how='all', subset=mlb_only_cols, inplace=True)  # Keep only the major league rows
-        table.reset_index(inplace=True, drop=True)
+        Returns:
+            pd.DataFrame: A DataFrame containing player data from the Chadwick Register.
+        """
+        logger.info('Fetching player registry. This may take a moment.')
+        response = requests.get(PlayerLookup.REGISTRY_URL, timeout=10)
+        zip_content = io.BytesIO(response.content)
 
-        table[['key_mlbam', 'key_fangraphs']] = table[['key_mlbam', 'key_fangraphs']].fillna(-1)
-        table[['key_mlbam', 'key_fangraphs']] = table[['key_mlbam', 'key_fangraphs']].astype(int)
+        mlb_columns = ['key_retro', 'key_bbref', 'key_fangraphs', 'mlb_played_first', 'mlb_played_last']
+        essential_columns = ['name_last', 'name_first', 'key_mlbam'] + mlb_columns
 
-        return table[cols_to_keep]
+        with zipfile.ZipFile(zip_content) as archive:
+            data = PlayerLookup._compile_player_data(archive)[essential_columns]
 
-    @staticmethod
-    def get_lookup_table():
-        table = PlayerLookup.chadwick_register()
-        table['name_last'] = table['name_last'].str.lower()
-        table['name_first'] = table['name_first'].str.lower()
-        return table
+        # Filter for MLB players and clean data
+        data = data.dropna(how='all', subset=mlb_columns).reset_index(drop=True)
+        data[['key_mlbam', 'key_fangraphs']] = data[['key_mlbam', 'key_fangraphs']].fillna(-1).astype(int)
 
-    @staticmethod
-    def normalize_accents(s: str) -> str:
-        return ''.join(c for c in unicodedata.normalize('NFD', str(s)) if unicodedata.category(c) != 'Mn')
+        return data
 
     @staticmethod
-    def get_closest_names(last: str, first: str, player_table: pd.DataFrame) -> pd.DataFrame:
-        filled_df = player_table.fillna("").assign(chadwick_name=lambda row: row.name_first + " " + row.name_last)
-        fuzzy_matches = pd.DataFrame(
-            get_close_matches(f"{first} {last}", filled_df.chadwick_name, n=5, cutoff=0)
-        ).rename({0: "chadwick_name"}, axis=1)
-        return fuzzy_matches.merge(filled_df, on="chadwick_name").drop("chadwick_name", axis=1)
+    def load_player_registry():
+        """
+        Loads and preprocesses the player registry.
 
-    def search(self, last: str, first: str = None, fuzzy: bool = False, ignore_accents: bool = False) -> pd.DataFrame:
-        last = last.lower()
-        first = first.lower() if first else None
+                Returns:
+            pandas.DataFrame: The preprocessed player registry.
+        """
+        registry = PlayerLookup.fetch_chadwick_data()
+        registry[['name_last', 'name_first']] = registry[['name_last', 'name_first']].apply(lambda x: x.str.lower())
+        return registry
+
+    @staticmethod
+    def remove_accents(text: str) -> str:
+        """
+        Removes accents marks from a given string.
+
+        Args:
+                text (str): The input string from which accents marks will be removed.
+
+        Returns:
+            str: The input string without any accents marks.
+        """
+        normalized = unicodedata.normalize('NFD', str(text))
+        return ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
+
+    def search(self, last_name: str, first_name: str = None, ignore_accents: bool = True) -> pd.DataFrame:
+        """
+        Searches for a player in the registry based on their name.
+
+        Parameters:
+        - last_name (str): The last name of the player to search for.
+        - first_name (str, optional): The first name of the player to search for. Defaults to None.
+        - ignore_accents (bool, optional): Whether to ignore accents in the search. Defaults to True.
+
+        Returns:
+        - pd.DataFrame: A DataFrame containing the search results.
+        """
+        last_name = last_name.lower()
+        first_name = first_name.lower() if first_name else None
 
         if ignore_accents:
-            last = self.normalize_accents(last)
-            first = self.normalize_accents(first) if first else None
-            self.table['name_last'] = self.table['name_last'].apply(self.normalize_accents)
-            self.table['name_first'] = self.table['name_first'].apply(self.normalize_accents)
+            last_name = self.remove_accents(last_name)
+            first_name = self.remove_accents(first_name) if first_name else None
+            self.registry['name_last'] = self.registry['name_last'].apply(self.remove_accents)
+            self.registry['name_first'] = self.registry['name_first'].apply(self.remove_accents)
 
-        if first is None:
-            results = self.table.loc[self.table['name_last'] == last]
+        if first_name:
+            results = self.registry[(self.registry['name_last'] == last_name) & (self.registry['name_first'] == first_name)]
         else:
-            results = self.table.loc[(self.table['name_last'] == last) & (self.table['name_first'] == first)]
+            results = self.registry[self.registry['name_last'] == last_name]
 
-        results = results.reset_index(drop=True)
-
-        if len(results) == 0 and fuzzy:
-            logger.info("No identically matched names found! Returning the 5 most similar names.")
-            results = self.get_closest_names(last=last, first=first, player_table=self.table)
-
-        return results
+        return results.reset_index(drop=True)
