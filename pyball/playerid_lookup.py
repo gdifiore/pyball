@@ -19,6 +19,19 @@ logger = logging.getLogger(__name__)
 
 
 class PlayerLookup:
+    """
+    A class for looking up player information in the registry.
+
+    Attributes:
+        REGISTRY_URL (str): The URL of the player registry.
+        CSV_FILE_PATTERN (re.Pattern): The regular expression pattern for matching CSV file names.
+
+    Methods:
+        fetch_chadwick_data: Fetches and processes player data from the Chadwick Register.
+        load_player_registry: Loads and preprocesses the player registry.
+        remove_accents: Removes accents marks from a given string.
+        search: Searches for a player in the registry based on their name.
+    """
     REGISTRY_URL = "https://github.com/chadwickbureau/register/archive/refs/heads/master.zip"
     CSV_FILE_PATTERN = re.compile("/people.+csv$")
 
