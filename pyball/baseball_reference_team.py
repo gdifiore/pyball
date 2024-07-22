@@ -30,7 +30,7 @@ class BaseballReferenceTeamStatsScraper:
     pitching_stats(self) -> Optional[pd.DataFrame]
         Returns the pitching stats for the team as a pandas DataFrame.
     """
-    
+
     TABLE_IDS = {
         'batting': 'team_batting',
         'pitching': 'team_pitching'

@@ -145,6 +145,7 @@ def is_bbref_team_url(url):
     """
     return "teams" in url and "baseball-reference" in url
 
+
 def make_savant_player_url(last, first, key_mlbam):
     """
     Function to generate baseball savant url from last name, first name, and mlbam key
