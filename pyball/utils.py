@@ -4,7 +4,7 @@
 #
 # Description: File containing various utility functions used in pyball
 
-from functools import lru_cache, wraps
+import functools
 from datetime import datetime, timedelta
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 from bs4 import BeautifulSoup
@@ -22,37 +22,29 @@ def timed_lru_cache(seconds: int, maxsize: int = 128):
         function: The decorated function.
     """
     def wrapper_cache(func):
-        func = lru_cache(maxsize=maxsize)(func)
-        func.lifetime = timedelta(seconds=seconds)
-        func.expiration = datetime.now() + func.lifetime
+        cached_func = functools.lru_cache(maxsize=maxsize)(func)
+        cached_func.lifetime = timedelta(seconds=seconds)
+        cached_func.expiration = datetime.now() + cached_func.lifetime
 
-        @wraps(func)
+        @functools.wraps(func)
         def wrapped_func(*args, **kwargs):
-            if datetime.now() >= func.expiration:
-                func.cache_clear()
-                func.expiration = datetime.now() + func.lifetime
+            if datetime.now() >= cached_func.expiration:
+                cached_func.cache_clear()
+                cached_func.expiration = datetime.now() + cached_func.lifetime
+            return cached_func(*args, **kwargs)
 
-            return func(*args, **kwargs)
-
+        wrapped_func.cache_info = cached_func.cache_info
+        wrapped_func.cache_clear = cached_func.cache_clear
         return wrapped_func
 
     return wrapper_cache
 
 
+
 @timed_lru_cache(seconds=86400)  # Cache for 1 day
-def read_url(url):
+def fetch_url_content(url):
     """
-    Function to read a url and return the html content using Playwright
-
-    Parameters
-    ----------
-    url: String
-        The URL to read.
-
-    Returns
-    ----------
-    BeautifulSoup object
-        Contains the HTML content of the URL.
+    Function to read a url and return the raw html content using Playwright
     """
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -73,12 +65,21 @@ def read_url(url):
         finally:
             browser.close()
 
-    if html:
-        soup = BeautifulSoup(html, "html.parser")
-        return soup
-    else:
-        return None
+    return html  # Return raw HTML string
 
+def read_url(url):
+    """
+    Function to read a url, using cache when available, and return BeautifulSoup object
+    """
+    try:
+        html = fetch_url_content(url)
+        if html:
+            return BeautifulSoup(html, "html.parser")
+        else:
+            return None
+    except Exception as e:
+        print(f"Error fetching URL: {e}")
+        return None
 
 def make_bbref_player_url(bbref_key):
     """
