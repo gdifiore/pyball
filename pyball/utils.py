@@ -108,7 +108,7 @@ def is_bbref_player_url(url):
         url (str): The URL to check.
 
     Returns:
-        bool: True if the URL contains 'players', False otherwise.
+        bool: True if the URL contains 'players' and 'baseball-reference', False otherwise.
     """
     return "players" in url and "baseball-reference" in url
 
@@ -141,7 +141,7 @@ def is_bbref_team_url(url):
         url (str): The URL to check.
 
     Returns:
-        bool: True if the URL contains 'teams', False otherwise.
+        bool: True if the URL contains 'teams' and 'baseball-reference', False otherwise.
     """
     return "teams" in url and "baseball-reference" in url
 
@@ -168,3 +168,15 @@ def make_savant_player_url(last, first, key_mlbam):
     url = base_url + first + "-" + last + "-" + key_mlbam
 
     return url
+
+def is_savant_url(url):
+    """
+    Checks if the given string is a valid Baseball Savant url.
+
+    Args:
+        url (str): The URL to check.
+
+    Returns:
+        bool: True if the URL contains 'baseballsavant', False otherwise.
+    """
+    return "baseballsavant" in url

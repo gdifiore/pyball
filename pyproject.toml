@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pyball"
-version = "1.4.0"
+version = "1.4.1"
 description = "Python3 library for obtaining baseball information"
 authors = ["gdifiore"]
 readme = "README.md"
@@ -18,9 +18,6 @@ bs4 = "^0.0.1"
 requests = "^2.26.0"
 playwright = "^1.45.0"
 lxml = "^5.2.2"
-
-[tool.poetry.scripts]
-post-install = "pyball:post_install"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.1"
