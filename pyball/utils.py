@@ -4,56 +4,33 @@
 #
 # Description: File containing various utility functions used in pyball
 
-from functools import lru_cache, wraps
-from datetime import datetime, timedelta
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+import time
+import hashlib
+import diskcache
 from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 
-def timed_lru_cache(seconds: int, maxsize: int = 128):
+cache = diskcache.Cache('./.pyball_cache')
+
+
+def fetch_url_content(url, cache_time=86400):
     """
-    A decorator that combines LRU caching with a time-based expiration.
-
-    Args:
-        seconds (int): The number of seconds after which the cache should expire.
-        maxsize (int, optional): The maximum number of function calls to cache. Defaults to 128.
-
-    Returns:
-        function: The decorated function.
+    Function to read a url and return the BeautifulSoup object, using disk cache when available
     """
-    def wrapper_cache(func):
-        func = lru_cache(maxsize=maxsize)(func)
-        func.lifetime = timedelta(seconds=seconds)
-        func.expiration = datetime.now() + func.lifetime
+    # Create a unique key for this URL
+    url_hash = hashlib.md5(url.encode()).hexdigest()
 
-        @wraps(func)
-        def wrapped_func(*args, **kwargs):
-            if datetime.now() >= func.expiration:
-                func.cache_clear()
-                func.expiration = datetime.now() + func.lifetime
+    # Check if we have a valid cached version
+    cached_data = cache.get(url_hash)
+    if cached_data is not None:
+        timestamp, html = cached_data
+        if time.time() - timestamp < cache_time:
+            print("Using cached data")
+            return BeautifulSoup(html, "html.parser")
 
-            return func(*args, **kwargs)
-
-        return wrapped_func
-
-    return wrapper_cache
-
-
-@timed_lru_cache(seconds=86400)  # Cache for 1 day
-def read_url(url):
-    """
-    Function to read a url and return the html content using Playwright
-
-    Parameters
-    ----------
-    url: String
-        The URL to read.
-
-    Returns
-    ----------
-    BeautifulSoup object
-        Contains the HTML content of the URL.
-    """
+    # If no valid cache, fetch the content
+    print("Fetching from URL")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
@@ -74,9 +51,21 @@ def read_url(url):
             browser.close()
 
     if html:
-        soup = BeautifulSoup(html, "html.parser")
-        return soup
+        # Cache the new content
+        cache.set(url_hash, (time.time(), html))
+        return BeautifulSoup(html, "html.parser")
     else:
+        return None
+
+
+def read_url(url):
+    """
+    Function to read a url, using cache when available
+    """
+    try:
+        return fetch_url_content(url)
+    except Exception as e:
+        print(f"Error fetching URL: {e}")
         return None
 
 
@@ -168,6 +157,7 @@ def make_savant_player_url(last, first, key_mlbam):
     url = base_url + first + "-" + last + "-" + key_mlbam
 
     return url
+
 
 def is_savant_url(url):
     """
