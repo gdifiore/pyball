@@ -32,5 +32,4 @@ Leave any comments or suggestions in [an issue](https://github.com/SummitCode/py
 `pyball` is licensed under the [MIT license](https://github.com/SummitCode/pyball/blob/master/LICENSE)
 
 ## To-do
-- I think the cache is broken? Or the lookup is slow, investigate.
 - Would like to make a base class of shared functions (_get_soup(), _find_table(), ...) but I kinda hate how python classes work.
