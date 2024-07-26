@@ -9,7 +9,7 @@ import logging
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from pyball.utils import read_url
+from pyball.utils import read_url, is_savant_url
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -43,11 +43,11 @@ class SavantScraper:
     """
 
     TABLE_IDS = {
-        'percentile': 'percentileRankings',
-        'pitching': 'statcast_stats_pitching',
-        'batting': 'statcast_glance_batter',
-        'batted_ball': 'playeDiscipline',
-        'pitch_tracking': 'detailedPitches'
+        "percentile": "percentileRankings",
+        "pitching": "statcast_stats_pitching",
+        "batting": "statcast_glance_batter",
+        "batted_ball": "playeDiscipline",
+        "pitch_tracking": "detailedPitches",
     }
 
     def __init__(self, url: str):
@@ -59,6 +59,8 @@ class SavantScraper:
         url : str
             The URL of the Baseball Savant page to scrape.
         """
+        if not is_savant_url(url):
+            raise ValueError(f"Invalid team URL: {url}")
         self.url = url
         self.soup = self._get_soup()
         if self.soup is None:
@@ -71,7 +73,8 @@ class SavantScraper:
         Returns:
         --------
         BeautifulSoup or None
-            The BeautifulSoup object representing the HTML content of the URL, or None if retrieval failed.
+            The BeautifulSoup object representing the HTML content of the URL,
+            or None if retrieval failed.
         """
         soup = read_url(self.url)
         if soup is None:
@@ -99,7 +102,11 @@ class SavantScraper:
             if div is not None:
                 table = div.find("table")
         if table is None:
-            logger.warning("Table with id '%s' not found for URL: %s", self.TABLE_IDS[table_id], self.url)
+            logger.warning(
+                "Table with id '%s' not found for URL: %s. Is the player the right position?",
+                self.TABLE_IDS[table_id],
+                self.url,
+            )
         return table
 
     def _get_dataframe(self, table_id: str) -> Optional[pd.DataFrame]:
@@ -122,11 +129,11 @@ class SavantScraper:
         try:
             df = pd.read_html(str(table))[0]
             df = df.dropna(how="all")
-            if table_id in ['pitching', 'batting'] and not df.empty:
-                df = df.drop(df.index[-1])  # drop last row of MLB average
             return df
         except ValueError as e:
-            logger.error("Error parsing %s table (no tables found): %s", table_id, str(e))
+            logger.error(
+                "Error parsing %s table (no tables found): %s", table_id, str(e)
+            )
             return None
         except Exception as e:
             logger.error("Unexpected error parsing %s table: %s", table_id, str(e))
@@ -141,7 +148,7 @@ class SavantScraper:
         pandas.DataFrame or None
             Contains the percentile stats for the player, or None if not found.
         """
-        return self._get_dataframe('percentile')
+        return self._get_dataframe("percentile")
 
     def get_pitching_stats(self) -> Optional[pd.DataFrame]:
         """
@@ -152,7 +159,7 @@ class SavantScraper:
         pandas.DataFrame or None
             Contains the savant pitching stats for the player, or None if not found.
         """
-        return self._get_dataframe('pitching')
+        return self._get_dataframe("pitching")
 
     def get_batting_stats(self) -> Optional[pd.DataFrame]:
         """
@@ -163,7 +170,7 @@ class SavantScraper:
         pandas.DataFrame or None
             Contains the savant batting stats for the player, or None if not found.
         """
-        return self._get_dataframe('batting')
+        return self._get_dataframe("batting")
 
     def get_batted_ball_profile(self) -> Optional[pd.DataFrame]:
         """
@@ -174,7 +181,7 @@ class SavantScraper:
         pandas.DataFrame or None
             Contains the batted ball profile for the player, or None if not found.
         """
-        return self._get_dataframe('batted_ball')
+        return self._get_dataframe("batted_ball")
 
     def get_pitch_tracking(self) -> Optional[pd.DataFrame]:
         """
@@ -185,4 +192,4 @@ class SavantScraper:
         pandas.DataFrame or None
             Contains the pitch-specific results for the player, or None if not found.
         """
-        return self._get_dataframe('pitch_tracking')
+        return self._get_dataframe("pitch_tracking")

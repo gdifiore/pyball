@@ -59,6 +59,8 @@ class BaseballReferencePlayerStatsScraper:
             raise ValueError(f"Invalid player URL: {url}")
         self.url = url
         self.soup = self._get_soup()
+        if self.soup is None:
+            logger.warning("Failed to retrieve content from URL: %s", self.url)
 
     def _get_soup(self) -> Optional[BeautifulSoup]:
         """
@@ -90,6 +92,17 @@ class BaseballReferencePlayerStatsScraper:
         """
         return self.soup.find("table", id=self.TABLE_IDS[table_id])
 
+    def _parse_table(self, table: BeautifulSoup):
+        rows = []
+        for row in table.find_all('tr'):
+            # Check if the row has the 'hidden' class
+            if 'hidden' not in row.get('class', []):
+                # Process the row only if it's not hidden
+                cells = row.find_all(['th', 'td'])
+                rows.append([cell.text.strip() for cell in cells])
+
+        return rows
+
     def _get_dataframe(self, table_id: str) -> Optional[pd.DataFrame]:
         """
         Parses the HTML table and returns it as a pandas DataFrame.
@@ -110,11 +123,14 @@ class BaseballReferencePlayerStatsScraper:
             return None
 
         try:
-            df = pd.read_html(str(table))[0]
+            rows = self._parse_table(table)
+            if not rows:
+                logger.warning("No visible rows found in %s stats table (not an MLB player?)", table_id)
+                return None
+
+            # Create DataFrame directly from the parsed rows
+            df = pd.DataFrame(rows[1:], columns=rows[0])
             return df.dropna(how="all")
-        except ValueError as e:
-            logger.error("Error parsing %s stats table (no tables found): %s", table_id, str(e))
-            return None
         except Exception as e:
             logger.error("Error parsing %s stats table: %s", table_id, str(e))
             return None

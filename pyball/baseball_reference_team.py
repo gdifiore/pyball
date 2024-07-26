@@ -59,6 +59,8 @@ class BaseballReferenceTeamStatsScraper:
             raise ValueError(f"Invalid team URL: {url}")
         self.url = url
         self.soup = self._get_soup()
+        if self.soup is None:
+            logger.warning("Failed to retrieve content from URL: %s", self.url)
 
     def _get_soup(self) -> Optional[BeautifulSoup]:
         """
@@ -114,6 +116,7 @@ class BaseballReferenceTeamStatsScraper:
 
         try:
             df = pd.read_html(str(table))[0]
+            df = df.iloc[:-1]
             return df.dropna(how="all")
         except ValueError as e:
             logger.error("Error parsing %s stats table (no tables found): %s", table_id, str(e))
