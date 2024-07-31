@@ -21,8 +21,8 @@ poetry install
 playwright install
 ```
 
-## Docs
-Read the [docs](https://gdifiore.github.io/pyball/docs/pyball/index.html) for function descriptions.
+## Samples
+Read the sample [jupyter notebook](https://gdifiore.github.io/pyball/examples/pyball_tutorial.html).
 
 ## Comments and Suggestions
 Leave any comments or suggestions in [an issue](https://github.com/SummitCode/pyball/issues/new) or directly make make [a pull request](https://github.com/SummitCode/pyball/compare) adding code.
