@@ -5,10 +5,11 @@
 # Description: File containing functions to obtain player (id) information
 # on various statistic sites from a lookup table.
 
+from functools import wraps
 import io
 import re
+import diskcache
 import zipfile
-from functools import lru_cache
 import unicodedata
 import logging
 import pandas as pd
@@ -17,6 +18,19 @@ import requests
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+cache = diskcache.Cache('./.pyball_cache')
+
+def disk_cache(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        key = f"{func.__name__}:{args}:{kwargs}"
+        result = cache.get(key)
+        if result is None:
+            result = func(*args, **kwargs)
+            cache.set(key, result)
+        return result
+    return wrapper
 
 class PlayerLookup:
     """
@@ -54,7 +68,7 @@ class PlayerLookup:
         return pd.concat(dataframes, axis=0)
 
     @staticmethod
-    @lru_cache(maxsize=1)
+    @disk_cache
     def fetch_chadwick_data() -> pd.DataFrame:
         """
         Fetches and processes player data from the Chadwick Register.
