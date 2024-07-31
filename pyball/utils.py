@@ -8,15 +8,21 @@ import time
 import hashlib
 import diskcache
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
-
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 cache = diskcache.Cache('./.pyball_cache')
 
 
+
 def fetch_url_content(url, cache_time=86400):
     """
-    Function to read a url and return the BeautifulSoup object, using disk cache when available
+    Function to read a URL and return the BeautifulSoup object, using disk cache when available
     """
     # Create a unique key for this URL
     url_hash = hashlib.md5(url.encode()).hexdigest()
@@ -31,43 +37,45 @@ def fetch_url_content(url, cache_time=86400):
 
     # If no valid cache, fetch the content
     print("Fetching from URL")
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        html = None
-        try:
-            page.goto(url, wait_until="networkidle", timeout=60000)
+    options = Options()
+    options.add_argument("--headless")
+    service = Service()
+    driver = webdriver.Chrome(service=service, options=options)
 
-            # Specific handling for different sites
-            if "baseball-reference.com" in url:
-                page.wait_for_selector('div#inner_nav', timeout=30000)
-            elif "baseballsavant" in url:
-                page.wait_for_selector("div.pitchingBreakdown table#detailedPitches", timeout=30000)
+    try:
+        driver.get(url)
 
-            html = page.content()
-        except PlaywrightTimeoutError:
-            html = page.content()
-        finally:
-            browser.close()
+        # Specific handling for different sites
+        if "baseball-reference.com" in url:
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div#inner_nav')))
+        elif "baseballsavant" in url:
+            WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.pitchingBreakdown table#detailedPitches")))
+        else:
+            # Default wait for network idle
+            time.sleep(10)  # Simple wait as Selenium doesn't have a built-in "networkidle" equivalent
+
+        html = driver.page_source
+    except TimeoutException:
+        html = driver.page_source
+    finally:
+        driver.quit()
 
     if html:
         # Cache the new content
-        cache.set(url_hash, (time.time(), html))
+        cache[url_hash] = (time.time(), html)
         return BeautifulSoup(html, "html.parser")
     else:
         return None
 
-
 def read_url(url):
     """
-    Function to read a url, using cache when available
+    Function to read a URL, using cache when available
     """
     try:
         return fetch_url_content(url)
     except Exception as e:
         print(f"Error fetching URL: {e}")
         return None
-
 
 def make_bbref_player_url(bbref_key):
     """
