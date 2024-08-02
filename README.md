@@ -17,8 +17,6 @@ python -m venv .venv
 (activate .venv)
 
 poetry install
-
-playwright install
 ```
 
 ## Samples
