@@ -1,3 +1,5 @@
+:warning: Baseball stats sites have (rightfully) made scraping harder, and I discourage the use of this tool.
+
 # pyball
 
 Library for grabbing baseball statistics in Python, designed for use in Jupyter Notebooks.
